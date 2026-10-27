@@ -64,6 +64,8 @@ jobs:
       - name: Foundation tests without game data
         if: runner.os == 'macOS'
         run: ctest --preset ${{ matrix.preset }}
+      - name: RTS projection and boolean regression tests without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure -R "^PoseidonTests - (RTS ray|tri assertions distinguish)"
       - name: Compile Rust workspace
         if: runner.os == 'macOS'
         run: cargo build --workspace --locked

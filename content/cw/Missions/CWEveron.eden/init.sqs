@@ -1,0 +1,7 @@
+; FR-003: mission owns state and handlers; initialize before starting the single scheduler.
+call preprocessFile "session.sqf"
+~0.5
+_started=call CWR_Start
+? !_started: exit
+[] exec "tick.sqs"
+exit

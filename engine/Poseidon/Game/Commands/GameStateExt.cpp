@@ -480,6 +480,7 @@ GameValue GameTitleText(const GameState* state, GameValuePar oper1);
 GameValue GetLaserTarget(const GameState* state, GameValuePar oper1);
 GameValue GetNearestObject(const GameState* state, GameValuePar oper1);
 GameValue GetNearestObjectByDistance(const GameState* state, GameValuePar oper1);
+GameValue ObjectPlacementClear(const GameState* state, GameValuePar object);
 GameValue GetNetIdObj(const GameState* state, GameValuePar oper1);
 GameValue GetNetworkId(const GameState* state, GameValuePar oper1);
 GameValue GetObjFromNetId(const GameState* state, GameValuePar oper1);
@@ -1202,6 +1203,7 @@ static const GameFunction* GetExtUnary(int& count)
         GameFunction(GameObject, "laserTarget", GetLaserTarget, GameObject),
         GameFunction(GameScalar, "getMass", ObjGetMass, GameObject),
         GameFunction(GameObject, "NearestObjectDistance", GetNearestObjectByDistance, GameArray),
+        GameFunction(GameBool, "objectPlacementClear", ObjectPlacementClear, GameObject),
         GameFunction(GameString, "substr", StrSub, GameArray),
         GameFunction(GameScalar, "sizeofstr", StrSize, GameString),
         // todo: add more parameters and adjust parameters to make some of them has default value

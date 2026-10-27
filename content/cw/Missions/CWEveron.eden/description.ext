@@ -1,0 +1,8 @@
+onLoadName="Conflict & War / Everon";
+overviewText="C&W RTS first slice: establish a base, construct barracks, deploy infantry.";
+respawn=0;
+showMap=1;
+showCompass=0;
+showWatch=0;
+showGPS=0;
+showNotepad=0;

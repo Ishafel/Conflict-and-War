@@ -20,6 +20,8 @@ std::vector<std::string> GRemoteExecLog;
 // Scalars use %g; strings use the raw value (GetString, no quotes).
 static std::string TriValStr(const GameValue& v)
 {
+    if (v.GetType() == GameBool)
+        return (GameBoolType)v ? "true" : "false";
     if (v.GetType() == GameScalar)
     {
         char buf[32];
@@ -32,6 +34,8 @@ static std::string TriValStr(const GameValue& v)
 // Truthy: non-zero scalar, non-empty string that is not "0".
 static bool TriIsTruthy(const GameValue& v)
 {
+    if (v.GetType() == GameBool)
+        return (GameBoolType)v;
     if (v.GetType() == GameScalar)
         return (float)(GameScalarType)v != 0.0f;
     std::string s = TriValStr(v);

@@ -1,5 +1,6 @@
 
 #include <Poseidon/UI/Controls/UIControls.hpp>
+#include <Poseidon/UI/Controls/RTSViewport.hpp>
 #include <Poseidon/Input/ControllerUiLayout.hpp>
 #include <Poseidon/Input/InputSubsystem.hpp>
 #include <Poseidon/Graphics/Core/Engine.hpp>
@@ -594,6 +595,8 @@ Control* ControlsContainer::OnCreateCtrl(int type, int idc, const ParamEntry& cl
         {
             return Poseidon::CreateStaticMapMain(this, idc, cls);
         }
+        case CT_RTS_VIEWPORT:
+            return new RTSViewport(this, idc, cls);
     }
     return nullptr;
 }

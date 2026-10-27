@@ -1,0 +1,9 @@
+; FR-004/006: the only production scheduler. Commands never spawn another worker.
+#loop
+~0.1
+? !(CWR_RTS select 10): exit
+call CWR_Tick
+
+? dialog: goto "loop"
+createDialog "CWR_Command"
+goto "loop"

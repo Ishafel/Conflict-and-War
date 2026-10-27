@@ -116,3 +116,12 @@ the GPL with additional terms per Section 7 in [`LICENSE`](LICENSE).
 This fork uses the SDD contribution workflow in [CONTRIBUTING.md](CONTRIBUTING.md).
 The original upstream was a locked source release; that restriction describes
 upstream and does not define the workflow of Conflict & War.
+
+## Первый RTS-срез
+
+Глобальное направление C&W — стратегия в реальном времени с постройкой базы и
+производством юнитов. Первый срез: настоящий 3D-мир Everon, штаб, казарма,
+пехота и постоянная правая панель с миникартой и карточками.
+[Запуск и управление](docs/rts-first-slice.md),
+[спецификация](specs/003-everon-rts-slice/spec.md),
+[задачи](specs/003-everon-rts-slice/tasks.md).

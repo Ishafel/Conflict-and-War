@@ -103,6 +103,18 @@ TEST_CASE("triAssert - passes on truthy, fails on falsy", "[tri][generic-assert]
     REQUIRE_THAT(S(TriAssert(nullptr, Arr1(GScalar(0)))), ContainsSubstring("got 0"));
 }
 
+TEST_CASE("tri assertions distinguish native booleans", "[tri][generic-assert][rts]")
+{
+    InitFixture fix;
+    REQUIRE(S(TriAssert(nullptr, Arr1(GameValue(true)))) == "OK");
+    REQUIRE_THAT(S(TriAssert(nullptr, Arr1(GameValue(false)))), StartsWith("FAIL:"));
+    REQUIRE(S(TriRefute(nullptr, Arr1(GameValue(false)))) == "OK");
+    REQUIRE_THAT(S(TriRefute(nullptr, Arr1(GameValue(true)))), StartsWith("FAIL:"));
+    REQUIRE(S(TriAssertEq(nullptr, Arr2(GameValue(true), GameValue(true)))) == "OK");
+    REQUIRE_THAT(S(TriAssertEq(nullptr, Arr2(GameValue(true), GameValue(false)))), StartsWith("FAIL:"));
+    REQUIRE(S(TriAssertNe(nullptr, Arr2(GameValue(true), GameValue(false)))) == "OK");
+}
+
 TEST_CASE("triRefute - passes on falsy, fails on truthy", "[tri][generic-assert][triRefute]")
 {
     InitFixture fix;

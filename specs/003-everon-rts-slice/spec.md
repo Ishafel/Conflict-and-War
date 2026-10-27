@@ -1,0 +1,98 @@
+# Feature Specification: Everon RTS — первый срез Conflict & War
+
+**Feature Branch**: `feature/003-everon-rts-slice`
+**Created**: 2026-10-27
+**Status**: In progress
+**Input**: Превратить военный симулятор в RTS с оммажем C&C: Everon, база, казарма, солдаты, боковая панель, главное меню и заставка. Начать выполнение.
+
+## User Scenarios & Testing *(mandatory)*
+
+### User Story 1 — Командование на Everon (Priority: P1)
+
+Игрок запускает одиночную песочницу Everon со штабом. Основная область постоянно показывает настоящий 3D-мир; справа находится панель с миникартой и карточками производства. Команды отдаются кликом по 3D-ландшафту.
+
+**Why this priority**: Минимальный запускаемый путь от симулятора к стратегии.
+**Independent Test**: Запустить миссию, увидеть 3D-штаб и панель одновременно, переместить и приблизить камеру.
+**Acceptance Scenarios**:
+1. **Given** доступные локальные данные Everon, **When** миссия загружена, **Then** есть штаб в 3D-мире, стартовые кредиты и командная панель.
+2. **Given** панель открыта, **When** игрок двигает камеру и масштабирует вид, **Then** 3D-база видна сверху под углом, а панель остаётся открытой.
+
+### User Story 2 — Постройка и производство (Priority: P1)
+
+Игрок заказывает казарму, выбирает место рядом со штабом и после завершения строительства нанимает солдат.
+
+**Why this priority**: Доказывает основной цикл RTS.
+**Independent Test**: На чистом старте построить казарму и произвести двух солдат, проверить стоимость, задержку и повторный заказ.
+**Acceptance Scenarios**:
+1. **Given** достаточно кредитов, **When** выбрано допустимое место, **Then** стоимость списана один раз и площадка/здание появляется в мире и становится доступным для найма после времени строительства.
+2. **Given** готовая казарма, **When** заказана пехота, **Then** очередь обрабатывается последовательно и солдат появляется у казармы.
+3. **Given** выбран солдат, **When** задана точка движения, **Then** он получает приказ перемещения.
+
+### User Story 3 — Облик C&W (Priority: P2)
+
+Игрок видит оригинальные заставку и главное меню C&W, боковую панель с кредитами, командами и состоянием производства.
+
+**Why this priority**: Срез должен восприниматься как стратегия C&W.
+**Independent Test**: Проверить загрузку и интерфейс при 1280×720 и 1920×1080, сохранить снимки.
+**Acceptance Scenarios**:
+1. **Given** запущен C&W, **When** завершена загрузка, **Then** собственная заставка и меню ведут к первому срезу, настройкам и выходу.
+2. **Given** идёт строительство/найм, **When** открыт интерфейс, **Then** видны кредиты, состояние и доступность команд.
+
+### Edge Cases
+
+- Недостаток кредитов, двойной клик, отмена размещения: нет повторных списаний.
+- Место вне радиуса базы, вода или занятая площадка: отказ с объяснением.
+- Казарма не готова/уничтожена: найм недоступен, очередь возвращает оплаченные кредиты.
+- Выход/повторный запуск: состояние и обработчики не переносятся между миссиями.
+- Нет Everon или класса модели: явная диагностика, отсутствие данных не выдаётся за рабочий срез.
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: Документировать `main` (проверенные выпуски), `develop`, `feature/*`, `release/*`; разработку среза вести в feature от develop.
+- **FR-002**: Загружать Everon из внешней установки; исходники миссии и собственные ресурсы хранить в репозитории.
+- **FR-003**: Создать штаб и стартовый баланс 3000 кредитов; камера командира над настоящим 3D-миром без управления от первого лица; карта только в миникарте.
+- **FR-004**: Постоянная правая панель: кредиты, казарма (1000 / 15 с), солдат (100 / 5 с), очередь максимум 5, статус, возврат камеры к штабу, выход.
+- **FR-005**: Размещение одной казармы в пределах 150 м от штаба с проверкой воды и пересечения строений; отмена без списания.
+- **FR-006**: Солдат появляется у готовой казармы, доступен выбор и приказ движения. Отказы не меняют баланс. Уничтожение казармы отменяет очередь с возвратом.
+- **FR-007**: Собственное главное меню и заставка C&W, оригинальный сгенерированный фон с сохранённым промптом и происхождением; сохранить обязательные уведомления.
+- **FR-008**: Автоматические проверки экономики, очереди, размещения и повторного запуска плюс игровой прогон и снимки; результаты связывать с FR. Нативную готовность macOS не заявлять без прогонов.
+
+### Key Entities
+
+- Сессия: штаб, кредиты, режим команды, казарма и её срок готовности, очередь, произведённые солдаты, выбор, камера.
+- Заказ: тип, оплаченная цена, время готовности; один владелец обработки.
+- Точка размещения: мировые координаты, доступность, причина отказа.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: На Everon игрок за 2 минуты запускает базу, строит казарму, нанимает двух солдат и отдаёт приказ движения.
+- **SC-002**: После казармы и двух солдат остаётся 1800 кредитов; отменённые и отвергнутые команды не расходуют кредиты.
+- **SC-003**: Панель читается и не перекрывает основную командную область при 720p и 1080p.
+- **SC-004**: Есть воспроизводимый локальный запуск без копирования сторонних игровых данных в Git и честный отчёт проверок.
+
+## Assumptions
+
+- Первый срез — одиночная песочница без врага, сбора ресурсов, мультиплеера и сохранений. Это не завершённая RTS.
+- Кредиты конечны; балансовые значения выше — стартовые параметры среза.
+- Оммаж относится к циклу строительства и композиции боковой панели; графика и названия C&W оригинальные.
+- Основной экран — 3D. Выбор места, выделение солдата и приказ движения работают непосредственно в мире; 2D-карта используется только как миникарта.
+- Требуется существующая локальная установка с Everon и базовыми классами CWA.
+
+## Owner correction — 2026-10-27
+
+The owner rejected the command map as the main screen after seeing it in-game. This supersedes the earlier tactical-map assumption and US1 map acceptance: the main play area MUST show the actual 3D Everon world continuously with an elevated oblique RTS camera. Commands place/select/move directly by clicking that world. The right sidebar MUST follow the supplied reference composition: small minimap at top, credits and category tabs, two-column production cards with empty slots and progress. Art is original C&W, not copied reference pixels. No map/overview mode switching is required. Camera pan and zoom must stay available while the sidebar is open.
+
+- **FR-009**: Native 3D command viewport projects clicks through the current camera onto Everon terrain; sidebar/minimap clicks never issue world orders. Left click selects/places; right click moves/cancels. Arrow/WASD pan, wheel zoom, home returns HQ.
+- **FR-010**: Sidebar includes minimap, credits, build/infantry tabs, two-column cards, build/training progress, selection feedback; remains visible over the world at 720p and 1080p.
+- **SC-005**: Runtime screenshot shows 3D terrain/base and the sidebar simultaneously; actual world clicks build barracks/select a soldier/order movement and sidebar clicks do not debit or move unless intended.
+
+## Corrections from Windows review — 2026-10-27
+
+- **FR-011**: Placement must check the candidate barracks geometry against existing world geometry, including rotated buildings with centres outside 12 m. Rejected placement must leave credits and barracks state unchanged; unavailable geometry must fail explicitly.
+- **FR-012**: The Everon button must start the slice in both Windows Game and GameDemo using one shared registration implementation; other demo modules remain unchanged.
+- **FR-013**: Left-click an owned soldier to select it, then left-click empty terrain to move the selection. Clicking another soldier changes selection. Right-click move/cancel remains supported. Both ordinary and rapid repeated clicks must reach the command viewport through normal UI dispatch. Sidebar clicks never issue orders.
+- **SC-006**: Native Windows regressions reproduce a large rotated building overlap, GameDemo menu entry, and selection plus actual movement using cursor/button input through the UI event path, without directly invoking the viewport handler.

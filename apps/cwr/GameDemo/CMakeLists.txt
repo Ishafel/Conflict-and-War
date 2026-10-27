@@ -64,3 +64,9 @@ set_target_properties(PoseidonGameDemo PROPERTIES OUTPUT_NAME "PoseidonGameDemo"
 
 include(${CMAKE_SOURCE_DIR}/cmake/DistCopy.cmake)
 dist_copy(PoseidonGameDemo)
+add_dependencies(PoseidonGameDemo CWRContent)
+add_custom_command(TARGET PoseidonGameDemo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/content/cw $<TARGET_FILE_DIR:PoseidonGameDemo>/cw
+    VERBATIM
+)

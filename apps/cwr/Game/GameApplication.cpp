@@ -28,6 +28,9 @@
 #include <Poseidon/Dev/Debug/DebugTrap.hpp>
 #include <Poseidon/UI/UITestEngine.hpp>
 #include <Poseidon/UI/GameModule.hpp>
+#include <Poseidon/UI/DisplayUI.hpp>
+#include <Poseidon/UI/OptionsUI.hpp>
+#include <Poseidon/UI/OptionsUICommon.hpp>
 #include <Poseidon/UI/Missions/MissionsModule.hpp>
 #include <Poseidon/UI/Campaigns/CampaignsModule.hpp>
 #include <Poseidon/Core/ModSystem.hpp>
@@ -1521,7 +1524,50 @@ bool GameApplication::InitializeGameContent()
     // The re-runnable engine-core load (banks/addons + config-derived tables); a mod
     // re-mount calls it again after UnloadGameData. InitMan must be preceded by
     // ManCleanUp on a reload — UnloadGameData provides that. Deltas via the hooks below.
-    return InitializeEngineCore();
+    if (!InitializeEngineCore())
+        return false;
+
+    // FR-002/007: only project-owned resources, resolved relative to the executable.
+    const std::filesystem::path content = std::filesystem::path(SDL_GetBasePath()) / "cw";
+    const auto resource = (content / "ui/resources.cpp").generic_string();
+    ParamFile extra;
+    if (extra.Parse(resource.c_str()) != LSOK)
+    {
+        LOG_ERROR(Core, "C&W resources could not be loaded: {}", resource);
+        return false;
+    }
+    for (const auto& [className, fileName] : {std::pair{"CWR_Background", "menu.paa"},
+                                            std::pair{"CWR_BarracksArt", "barracks.paa"},
+                                            std::pair{"CWR_InfantryArt", "infantry.paa"}})
+    {
+        auto* imageClass = extra.FindEntry(className);
+        const auto texture = content / "ui" / fileName;
+        if (!imageClass || !imageClass->IsClass() || !std::filesystem::is_regular_file(texture))
+        {
+            LOG_ERROR(Core, "C&W resource missing class {} or image {}", className, texture.generic_string());
+            return false;
+        }
+        // ParamClass::Add follows inherited fields. Detach the base while adding
+        // this local override, otherwise one image can overwrite sibling text.
+        auto* imageConfig = imageClass->GetClassInterface();
+        const std::string baseName = imageConfig->GetBaseName() ? imageConfig->GetBaseName() : "";
+        const auto* base = baseName.empty() ? nullptr : extra.FindEntry(baseName.c_str());
+        imageConfig->SetBase(nullptr);
+        // The engine's picture resolver uses a leading backslash to suppress
+        // its default data/ prefix, including for absolute filesystem paths.
+        imageConfig->Add("text", RString(("\\" + texture.generic_string()).c_str()));
+        imageConfig->SetBase(base ? base->GetClassInterface() : nullptr);
+    }
+    Res.Update(extra);
+    Res.SetFile(&Res);
+    for (const char* name : {"BuildArt", "Build", "TrainArt", "Train"})
+    {
+        const auto& cls = Res >> "CWR_Command" >> name;
+        LOG_DEBUG(Core, "C&W control {}: type={} style={} text={}", name, int(cls >> "type"), int(cls >> "style"),
+                  (const char*)RString(cls >> "text"));
+    }
+    LOG_INFO(Core, "C&W resources loaded: {}", resource);
+    return true;
 }
 
 void GameApplication::ConfigureBankMerge()
@@ -1600,7 +1646,8 @@ bool GameApplication::InitializeWorld()
         // Leading backslash → OpenScript skips FindScript's default
         // `scripts\` prefix and resolves verbatim against the bank
         // mounted at `cwr_logo\` (our addon PBO).
-        SetProgressScript(CreateProgressScript("\\cwr_logo\\cwr_startup.sqs"));
+        const auto script = (std::filesystem::path(SDL_GetBasePath()) / "cw/ui/startup.sqs").generic_string();
+        SetProgressScript(CreateProgressScript(("\\" + script).c_str()));
     }
 
     ProgressStart_Wrapper(IDS_LOAD_INIT);
@@ -1895,4 +1942,14 @@ void GameApplication::RegisterGameModules()
     Poseidon::MultiplayerModule::Register();
     Poseidon::EditorModule::Register();
     ModsModule::Register();
+    GameModuleRegistry::Register({GameModuleId::RTS, "Everon RTS", 7390, [](ControlsContainer* parent) {
+        const auto directory = (std::filesystem::path(SDL_GetBasePath()) / "cw/Missions").generic_string() + "/";
+        SetCampaign("");
+        if (!ProcessTemplateName("CWEveron.eden", directory.c_str()))
+        {
+            LOG_ERROR(Core, "C&W Everon mission could not be loaded from {}", directory);
+            return;
+        }
+        parent->CreateChild(new DisplayIntro(parent));
+    }});
 }
