@@ -41,6 +41,8 @@ docs/out/
 coverage/
 
 # Tool/editor state
+/.idea/
+/.gigaide/
 /.vs/
 *.user
 *.suo

@@ -1,6 +1,6 @@
 # FindLLVMSanitizer.cmake
 # Dynamically locate LLVM installation, compilers, and sanitizer runtime libraries
-# Supports Windows with LLVM installed in Program Files, and Linux
+# Supports Windows LLVM on PATH, an explicit LLVM_ROOT, and Linux.
 
 function(find_llvm_root OUTPUT_VAR ARCH)
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -8,19 +8,31 @@ function(find_llvm_root OUTPUT_VAR ARCH)
         set(${OUTPUT_VAR} "" PARENT_SCOPE)
         return()
     endif()
-    if(ARCH STREQUAL "x86")
-        set(LLVM_DIR "C:/Program Files (x86)/LLVM")
-    elseif(ARCH STREQUAL "x64")
-        set(LLVM_DIR "C:/Program Files/LLVM")
-    else()
+    if(NOT ARCH STREQUAL "x86" AND NOT ARCH STREQUAL "x64")
         message(FATAL_ERROR "Unsupported architecture: ${ARCH}")
     endif()
-    
-    if(EXISTS "${LLVM_DIR}")
-        set(${OUTPUT_VAR} "${LLVM_DIR}" PARENT_SCOPE)
-    else()
-        message(FATAL_ERROR "LLVM not found at ${LLVM_DIR}")
+
+    # An explicit selection must never silently fall back to a different compiler.
+    set(_llvm_root "${LLVM_ROOT}")
+    if(NOT _llvm_root AND DEFINED ENV{LLVM_ROOT})
+        set(_llvm_root "$ENV{LLVM_ROOT}")
     endif()
+    if(_llvm_root)
+        file(TO_CMAKE_PATH "${_llvm_root}" _llvm_root)
+        if(NOT EXISTS "${_llvm_root}/bin/clang-cl.exe")
+            message(FATAL_ERROR "LLVM_ROOT does not contain bin/clang-cl.exe: ${_llvm_root}")
+        endif()
+    else()
+        find_program(_llvm_clang_cl NAMES clang-cl
+            HINTS "$ENV{ProgramFiles}/LLVM/bin" "$ENV{ProgramFiles\(x86\)}/LLVM/bin"
+            NO_CACHE)
+        if(NOT _llvm_clang_cl)
+            message(FATAL_ERROR "LLVM not found. Put clang-cl on PATH or set LLVM_ROOT. On Windows use scripts/windows-build.ps1.")
+        endif()
+        get_filename_component(_llvm_bin "${_llvm_clang_cl}" DIRECTORY)
+        get_filename_component(_llvm_root "${_llvm_bin}" DIRECTORY)
+    endif()
+    set(${OUTPUT_VAR} "${_llvm_root}" PARENT_SCOPE)
 endfunction()
 
 function(find_llvm_compilers ARCH)

@@ -1,42 +1,21 @@
-# Contributing
+# Разработка Conflict & War — C&W
 
-Thank you for your interest in Arma: Cold War Assault Remastered, the Poseidon
-engine source tree. This repository is a locked Bohemia Interactive source
-release, so it does not use a normal contribution workflow.
+Это самостоятельный модифицированный форк. Ограничения locked upstream
+относятся к исходному репозиторию Bohemia Interactive.
 
-## Repository Model
+## Порядок изменений
 
-This repository is published by Bohemia Interactive as a source release and is
-treated as a locked upstream:
+1. Прочитать [AGENTS.md](AGENTS.md) и [политику разработки](docs/engineering.md).
+2. Использовать [GitHub Spec Kit](docs/sdd/README.md): спецификация, план, задачи,
+   анализ согласованности, реализация и converge по штатным навыкам агента.
+3. Сохранить стек и совместимость; архитектурное решение записать в ADR.
+4. Реализовать требования без новых антипаттернов. При попытке их применения
+   явно указать `АНТИПАТТЕРН: <название>`, риск и исправление.
+5. Выполнить проверки по [руководству сборки](docs/building.md), указать результаты
+   и непроверенные платформы в verification.md. PR связывает требования и проверки.
 
-- Pull requests are not accepted in this repository.
-- Issues are open only for bugs in official Bohemia Interactive builds
-  distributed on Steam.
-- This repository does not host ongoing development and is not expected to be
-  updated continuously outside official Steam releases.
-- Bohemia Interactive may close or decline issues at its discretion.
-
-## Issues
-
-Use GitHub issues only for bugs in official Bohemia Interactive builds
-distributed on Steam. Use the issue template when opening a report.
-
-- Include the game version, Steam branch, operating system, reproduction steps,
-  expected behavior, and actual behavior.
-- Do not report security vulnerabilities in public issues.
-
-## Pull Requests
-
-Ideas, improvements, feature requests, source changes, dev-build crashes, local
-fork bugs, ports, retail game data questions, and asset questions belong outside
-this tracker.
-
-## Community Development
-
-If you are building a port, mod, experiment, or long-running fork, continue in
-your own fork under the license terms in `LICENSE`. You can also share ideas,
-improvements, and community development work with the community release authors at
-<https://github.com/ofpisnotdead-com/CWR-CE>.
+Для сообщения об ошибке нужны ОС/архитектура, ревизия, preset, шаги воспроизведения,
+ожидаемый и фактический результат. Не включать секреты или сторонние игровые данные.
 
 ## Licensing Of Contributions
 

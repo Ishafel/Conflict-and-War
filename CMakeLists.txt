@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.25 FATAL_ERROR)
 
-project(CWR
+project(ConflictAndWar
     VERSION 1.0.0
     LANGUAGES CXX C
-    DESCRIPTION "Arma: Cold War Assault - Remastered"
+    DESCRIPTION "Conflict & War - C&W"
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -142,7 +142,7 @@ add_compile_options(
 enable_testing()
 
 # Backend availability — driven by platform, overridable
-option(CWR_HAS_OPENGL    "OpenGL 4.5 graphics backend"  ON)
+option(CWR_HAS_OPENGL    "OpenGL 3.3 graphics backend"  ON)
 option(CWR_HAS_OPENAL    "OpenAL audio backend"          ON)
 
 # Disable precompiled headers — for include self-containment audits. With PCH off
@@ -335,33 +335,22 @@ endforeach()
 # clang-format targets
 find_program(CLANG_FORMAT_EXE NAMES clang-format REQUIRED)
 
-if(WIN32)
-    add_custom_target(Format
-        COMMAND powershell -NoProfile -Command "Get-Content ${CMAKE_BINARY_DIR}/format_sources.txt | ForEach-Object { & '${CLANG_FORMAT_EXE}' --dry-run --Werror $_ }"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Checking C++ formatting (fails if changes needed)"
+foreach(_format_target Format FormatFix)
+    set(_format_fix OFF)
+    if(_format_target STREQUAL "FormatFix")
+        set(_format_fix ON)
+    endif()
+    add_custom_target(${_format_target}
+        COMMAND "${CMAKE_COMMAND}"
+            "-DSOURCE_LIST=${CMAKE_BINARY_DIR}/format_sources.txt"
+            "-DCLANG_FORMAT=${CLANG_FORMAT_EXE}"
+            "-DFIX=${_format_fix}"
+            -P "${CMAKE_SOURCE_DIR}/cmake/RunClangFormat.cmake"
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        COMMENT "Running ${_format_target}"
         VERBATIM
     )
-    add_custom_target(FormatFix
-        COMMAND powershell -NoProfile -Command "Get-Content ${CMAKE_BINARY_DIR}/format_sources.txt | ForEach-Object { & '${CLANG_FORMAT_EXE}' -i $_ }"
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Formatting C++ sources with clang-format"
-        VERBATIM
-    )
-else()
-    add_custom_target(Format
-        COMMAND xargs -a ${CMAKE_BINARY_DIR}/format_sources.txt ${CLANG_FORMAT_EXE} --dry-run --Werror
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Checking C++ formatting (fails if changes needed)"
-        VERBATIM
-    )
-    add_custom_target(FormatFix
-        COMMAND xargs -a ${CMAKE_BINARY_DIR}/format_sources.txt ${CLANG_FORMAT_EXE} -i
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Formatting C++ sources with clang-format"
-        VERBATIM
-    )
-endif()
+endforeach()
 
 # Python lint targets (ruff via uv, optional)
 find_program(UV_EXE NAMES uv)
@@ -400,33 +389,23 @@ endif()
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 
 if(CLANG_TIDY_EXE)
-    if(WIN32)
-        add_custom_target(Tidy
-            COMMAND powershell -NoProfile -Command "Get-Content ${CMAKE_BINARY_DIR}/tidy_sources.txt | ForEach-Object { & '${CLANG_TIDY_EXE}' -p ${CMAKE_BINARY_DIR} --allow-no-checks $_ }"
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMENT "Running clang-tidy on all sources"
+    foreach(_tidy_target Tidy TidyFix)
+        set(_tidy_fix OFF)
+        if(_tidy_target STREQUAL "TidyFix")
+            set(_tidy_fix ON)
+        endif()
+        add_custom_target(${_tidy_target}
+            COMMAND "${CMAKE_COMMAND}"
+                "-DSOURCE_LIST=${CMAKE_BINARY_DIR}/tidy_sources.txt"
+                "-DCLANG_TIDY=${CLANG_TIDY_EXE}"
+                "-DBUILD_DIR=${CMAKE_BINARY_DIR}"
+                "-DFIX=${_tidy_fix}"
+                -P "${CMAKE_SOURCE_DIR}/cmake/RunClangTidy.cmake"
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+            COMMENT "Running ${_tidy_target}"
             VERBATIM
         )
-        add_custom_target(TidyFix
-            COMMAND powershell -NoProfile -Command "Get-Content ${CMAKE_BINARY_DIR}/tidy_sources.txt | ForEach-Object { & '${CLANG_TIDY_EXE}' -p ${CMAKE_BINARY_DIR} --allow-no-checks --fix-errors --fix $_ }"
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMENT "Running clang-tidy with automatic fixes (including compilation errors)"
-            VERBATIM
-        )
-    else()
-        add_custom_target(Tidy
-            COMMAND xargs -a ${CMAKE_BINARY_DIR}/tidy_sources.txt ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} --allow-no-checks
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMENT "Running clang-tidy on all sources"
-            VERBATIM
-        )
-        add_custom_target(TidyFix
-            COMMAND xargs -a ${CMAKE_BINARY_DIR}/tidy_sources.txt ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} --allow-no-checks --fix-errors --fix
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMENT "Running clang-tidy with automatic fixes (including compilation errors)"
-            VERBATIM
-        )
-    endif()
+    endforeach()
 endif()
 
 # File size check target (warn > 3000 lines, error > 5000 lines)

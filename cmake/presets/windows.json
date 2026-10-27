@@ -36,6 +36,11 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-windows-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/win-x64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
       }
     },
     {
@@ -46,6 +51,11 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-windows-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/win-x64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
       }
     },
     {
@@ -56,6 +66,75 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-windows-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/win-x64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "win-x64-clang-dbg",
+      "configurePreset": "win-x64-clang-dbg"
+    },
+    {
+      "name": "win-x64-clang-rwdi",
+      "configurePreset": "win-x64-clang-rwdi"
+    },
+    {
+      "name": "win-x64-clang-rel",
+      "configurePreset": "win-x64-clang-rel"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "win-x64-clang-dbg",
+      "configurePreset": "win-x64-clang-dbg",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
+      }
+    },
+    {
+      "name": "win-x64-clang-rwdi",
+      "configurePreset": "win-x64-clang-rwdi",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
+      }
+    },
+    {
+      "name": "win-x64-clang-rel",
+      "configurePreset": "win-x64-clang-rel",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
       }
     }
   ]

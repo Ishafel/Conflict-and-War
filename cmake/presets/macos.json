@@ -36,6 +36,11 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm64-macos-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/macos-arm64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
       }
     },
     {
@@ -46,6 +51,11 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm64-macos-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/macos-arm64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
       }
     },
     {
@@ -56,6 +66,11 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm64-macos-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/macos-arm64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
       }
     },
     {
@@ -66,6 +81,11 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-macos-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/macos-x64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
       }
     },
     {
@@ -76,6 +96,11 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-macos-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/macos-x64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
       }
     },
     {
@@ -86,6 +111,135 @@
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-macos-clang",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/macos-x64-clang.cmake"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "macos-arm64-clang",
+      "configurePreset": "macos-arm64-clang"
+    },
+    {
+      "name": "macos-arm64-clang-rwdi",
+      "configurePreset": "macos-arm64-clang-rwdi"
+    },
+    {
+      "name": "macos-arm64-clang-rel",
+      "configurePreset": "macos-arm64-clang-rel"
+    },
+    {
+      "name": "macos-x64-clang",
+      "configurePreset": "macos-x64-clang"
+    },
+    {
+      "name": "macos-x64-clang-rwdi",
+      "configurePreset": "macos-x64-clang-rwdi"
+    },
+    {
+      "name": "macos-x64-clang-rel",
+      "configurePreset": "macos-x64-clang-rel"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "macos-arm64-clang",
+      "configurePreset": "macos-arm64-clang",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
+      }
+    },
+    {
+      "name": "macos-arm64-clang-rwdi",
+      "configurePreset": "macos-arm64-clang-rwdi",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
+      }
+    },
+    {
+      "name": "macos-arm64-clang-rel",
+      "configurePreset": "macos-arm64-clang-rel",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
+      }
+    },
+    {
+      "name": "macos-x64-clang",
+      "configurePreset": "macos-x64-clang",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
+      }
+    },
+    {
+      "name": "macos-x64-clang-rwdi",
+      "configurePreset": "macos-x64-clang-rwdi",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
+      }
+    },
+    {
+      "name": "macos-x64-clang-rel",
+      "configurePreset": "macos-x64-clang-rel",
+      "output": {
+        "outputOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "name": "^PoseidonFoundationTests - "
+        }
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "timeout": 120
       }
     }
   ]

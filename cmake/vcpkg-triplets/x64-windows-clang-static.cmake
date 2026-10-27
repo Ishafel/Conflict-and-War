@@ -1,4 +1,5 @@
 set(VCPKG_TARGET_ARCHITECTURE x64)
+list(APPEND VCPKG_ENV_PASSTHROUGH LLVM_ROOT)
 # Static CRT (/MT) so the dependency objects match clang's libFuzzer runtime
 # (clang_rt.fuzzer-x86_64.lib is built /MT); a /MD dep would trip
 # /failifmismatch RuntimeLibrary against it. Used only by the win-x64-clang-fuzz

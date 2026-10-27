@@ -1,0 +1,72 @@
+name: Native Windows and macOS builds
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.preset }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            preset: win-x64-clang-rwdi
+          - os: macos-15
+            preset: macos-arm64-clang-rwdi
+          - os: macos-15-intel
+            preset: macos-x64-clang-rwdi
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/build/vcpkg
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Windows build and tests (same pipeline as local development)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./build.cmd -Preset ${{ matrix.preset }} -Jobs 3
+      - name: Install macOS build tools
+        if: runner.os == 'macOS'
+        run: brew install ninja ccache llvm
+      - name: Select macOS LLVM tools
+        if: runner.os == 'macOS'
+        run: |
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          echo "CC=$(brew --prefix llvm)/bin/clang" >> "$GITHUB_ENV"
+          echo "CXX=$(brew --prefix llvm)/bin/clang++" >> "$GITHUB_ENV"
+      - name: Bootstrap pinned vcpkg
+        if: runner.os == 'macOS'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $baseline = (Get-Content vcpkg.json -Raw | ConvertFrom-Json).'builtin-baseline'
+          git clone https://github.com/microsoft/vcpkg.git "$env:VCPKG_ROOT"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git -C "$env:VCPKG_ROOT" checkout $baseline
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if ($IsWindows) { & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics }
+          else { & "$env:VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Configure
+        if: runner.os == 'macOS'
+        run: cmake --preset ${{ matrix.preset }}
+      - name: Compile C++ targets
+        if: runner.os == 'macOS'
+        run: cmake --build --preset ${{ matrix.preset }} --parallel 3
+      - name: Foundation tests without game data
+        if: runner.os == 'macOS'
+        run: ctest --preset ${{ matrix.preset }}
+      - name: Compile Rust workspace
+        if: runner.os == 'macOS'
+        run: cargo build --workspace --locked
+      - name: Test Rust workspace
+        if: runner.os == 'macOS'
+        run: cargo test --workspace --locked

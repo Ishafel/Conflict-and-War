@@ -1,6 +1,27 @@
-# Arma: Cold War Assault - Remastered
+# Conflict & War — C&W
 
-This repository holds the engine and game source code (codename *Poseidon*) behind *Arma: Cold War Assault* — the game first released in 2001 as *Operation Flashpoint: Cold War Crisis*. That release launched Bohemia Interactive and began the technology lineage that later grew into Real Virtuality, Arma, and Enfusion. The code has been modernized to C++20, built with CMake and Clang, with cross-platform support for Windows x64 and Linux x64.
+**Conflict & War** (сокращённо **C&W**) на текущем этапе разрабатывается как
+глубокая модификация Arma: Cold War Assault — Remastered на основе опубликованного кода.
+Он не является официальным продуктом Bohemia Interactive.
+
+Разработка ведётся по **SDD с GitHub Spec Kit**:
+[памятка по использованию](docs/sdd/README.md), [обязательные правила](AGENTS.md),
+[политика стека и антипаттернов](docs/engineering.md).
+Стек сохраняется; его замена требует доказанного технического тупика и решения владельца.
+Новые антипаттерны запрещены; попытки явно помечаются `АНТИПАТТЕРН: <название>`.
+
+Сборка: [Windows x64 и macOS arm64/x64](docs/building.md).
+Имена внутренних целей `Poseidon*` пока сохранены для совместимости.
+
+> **Как пользоваться Spec Kit:** в чате проекта выполните по очереди
+> `$speckit-specify <задача>` → `$speckit-plan` → `$speckit-tasks` →
+> `$speckit-analyze` → `$speckit-implement` → `$speckit-converge`.
+> При неясностях используйте `$speckit-clarify`. Проверяйте результат каждого шага;
+> это команды чата, а не терминала. [Короткая памятка](docs/sdd/README.md).
+
+## Upstream source and provenance
+
+This repository holds the engine and game source code (codename *Poseidon*) behind *Arma: Cold War Assault* — the game first released in 2001 as *Operation Flashpoint: Cold War Crisis*. That release launched Bohemia Interactive and began the technology lineage that later grew into Real Virtuality, Arma, and Enfusion. The code has been modernized to C++20, built with CMake and Clang, with existing platform configurations for Windows, Linux and macOS. Native build verification for this fork is tracked separately in specs/001-project-foundation/verification.md.
 Bohemia Interactive is releasing it to the community that has kept this game alive for more than two decades — to study it, build on it, fix it, and create from it. Three things are worth keeping separate:
 
 **Source code (this repository)**
@@ -20,19 +41,26 @@ In short: the code is free software, the name is not, and the game data comes se
 
 ## Quick Start
 
-```sh
-cmake --preset win-x64-clang-rwdi
-cmake --build build/win-x64-clang-rwdi
+Windows: из обычного PowerShell, при установленном VS 2022 C++ Build Tools и Git:
+
+```powershell
+./build.cmd
 ```
 
-On GNU/Linux, use the matching `linux-x64-clang-rwdi` preset.
+Сценарий подготовит локальные инструменты и зависимости, соберёт C++/Rust и
+выполнит базовые тесты. Для повторной сборки используйте ту же команду.
+[Параметры, кеши и диагностика](docs/building.md#windows-одна-команда).
+
+On macOS, use `macos-arm64-clang-rwdi` or `macos-x64-clang-rwdi`.
+For GNU/Linux, keep using `cmake --preset linux-x64-clang-rwdi`, then
+`cmake --build build/linux-x64-clang-rwdi` and CTest against that directory.
 
 ## Layout
 
 - [Apps](apps/README.md) - executable targets
 - [Engine](engine/README.md) - engine libraries and Rust Trident tooling
 - [Master server tools](mserver/README.md) - Rust service and CLI crates
-- [Tests](tests/README.md) - test source trees; CI currently compiles them only
+- [Tests](tests/README.md) - C++ and Rust tests; CI runs Foundation and Rust tests
 - `cmake/` - presets, toolchains, vcpkg triplets, and overlay ports
 - `docker/` - container support for service and runtime environments
 - `packages/` - ignored local game data staging area
@@ -85,8 +113,6 @@ the GPL with additional terms per Section 7 in [`LICENSE`](LICENSE).
 
 ## Contributing
 
-This is a **locked** repository: pull requests are not accepted here, and this
-repository will not be continuously updated.
-Issues are only for bugs in official Bohemia Interactive builds distributed on
-Steam. For ideas, development builds, ports, and community work, fork the code or
-join the community continuation. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for more information.
+This fork uses the SDD contribution workflow in [CONTRIBUTING.md](CONTRIBUTING.md).
+The original upstream was a locked source release; that restriction describes
+upstream and does not define the workflow of Conflict & War.
