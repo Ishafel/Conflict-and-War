@@ -1942,6 +1942,11 @@ void GameApplication::RegisterGameModules()
     Poseidon::MultiplayerModule::Register();
     Poseidon::EditorModule::Register();
     ModsModule::Register();
+    RegisterRTSModule();
+}
+
+void GameApplication::RegisterRTSModule()
+{
     GameModuleRegistry::Register({GameModuleId::RTS, "Everon RTS", 7390, [](ControlsContainer* parent) {
         const auto directory = (std::filesystem::path(SDL_GetBasePath()) / "cw/Missions").generic_string() + "/";
         SetCampaign("");

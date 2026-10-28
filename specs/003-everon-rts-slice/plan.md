@@ -59,3 +59,9 @@ FR-011: add a generic native `objectPlacementClear` query for a temporary candid
 FR-012: extract the existing RTS registration into a protected GameApplication method, called by both Game and GameDemo. Keep module dispatch and mission staging unchanged.
 
 FR-013: centralize closest-owned-unit selection in the mission; contextual left click selects a unit or moves an existing selection. Forward double clicks in RTSViewport to the same click command. Add a Trident scenario using cursor/button state and normal ControlsContainer polling, rather than triClickAt's direct callbacks. Validate collision rejection and demo entry separately. No changes to stack, compatibility names or licensing; constitution check PASS. Native macOS remains open.
+
+## CI repair design — 2026-10-28
+
+FR-014: isolate the existing VS environment import in a function in scripts/windows-build.ps1. Save and restore caller VCPKG_ROOT around the import; preserve normal SDK/PATH import. Exercise the actual function using PowerShell AST extraction without running a full build. Run this regression in CI before compilation and run native Prepare with valid/invalid checkout paths locally.
+
+FR-015: retain Homebrew LLVM for required clang-format tools but choose xcrun's absolute clang/clang++ paths for CC/CXX, paired with xcrun SDKROOT, before configuring either project or dependencies. This remains the Clang/CMake/vcpkg stack; no technology change. Add an enkiTS overlay copied from the pinned port, keeping upstream revision/hash/license/install steps and adding only type_traits include. No warning suppression, dependency removal or baseline update. Keep failure diagnostics as workflow artifacts to expose subsequent native blockers. Analyze new requirement/task coverage before implementation; constitution check PASS.

@@ -68,6 +68,8 @@ PCH-компиляции используют инкрементальный Nin
 Явный неверный LLVM_ROOT считается ошибкой. Внешний VCPKG_ROOT должен быть
 на baseline из vcpkg.json; сценарий не выполняет reset/clean или автоматическое
 переключение существующего checkout. Это защищает локальные изменения.
+Импорт окружения Visual Studio сохраняет заданный VCPKG_ROOT; встроенная копия
+vcpkg из VS не заменяет зафиксированный checkout проекта.
 При обновлении baseline сначала явно подготовьте соответствующий checkout
 либо выберите новый каталог VCPKG_ROOT.
 
@@ -82,8 +84,9 @@ Git LFS и инструменты через Homebrew:
 ```sh
 brew install cmake ninja ccache llvm git-lfs
 export PATH="$(brew --prefix llvm)/bin:$PATH"
-export CC="$(brew --prefix llvm)/bin/clang"
-export CXX="$(brew --prefix llvm)/bin/clang++"
+export CC="$(xcrun --find clang)"
+export CXX="$(xcrun --find clang++)"
+export SDKROOT="$(xcrun --show-sdk-path)"
 git lfs install
 git lfs pull
 
@@ -103,6 +106,11 @@ cargo test --workspace --locked
 
 При ошибке остановиться и устранить её до следующего шага. Debug presets называются
 `macos-arm64-clang` / `macos-x64-clang`, Release — с суффиксом `-rel`.
+
+На macOS проект и зависимости используют Clang из активного Xcode, согласованный
+с его SDK. Homebrew LLVM предоставляет clang-format. Это исключает случайную
+подмену SDK-компилятора новой основной версией Homebrew LLVM. Baseline vcpkg
+не меняется; overlay enkiTS явно подключает type_traits, используемый upstream.
 ARM и Intel проверяются раздельно; universal binary пока не создаётся.
 
 ## Результаты и проверки

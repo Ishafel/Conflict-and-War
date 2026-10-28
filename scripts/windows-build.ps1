@@ -33,6 +33,18 @@ function Add-ToolPath([string] $Directory) {
     }
 }
 
+function Import-VisualStudioEnvironment([string[]] $Lines) {
+    # VS Enterprise may supply its bundled vcpkg, which is not our pinned checkout.
+    # Preserve the caller's choice (or absence) so repository defaults still apply.
+    $requestedVcpkgRoot = [Environment]::GetEnvironmentVariable('VCPKG_ROOT', 'Process')
+    foreach ($line in $Lines) {
+        if ($line -match '^([^=]+)=(.*)$') {
+            [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
+        }
+    }
+    [Environment]::SetEnvironmentVariable('VCPKG_ROOT', $requestedVcpkgRoot, 'Process')
+}
+
 function Invoke-Checked([string] $Tool, [string[]] $Arguments) {
     # Route native streams through the host so Start-Transcript records diagnostics too.
     $command = Get-Command $Tool -ErrorAction Stop
@@ -82,11 +94,7 @@ try {
     $devCmd = Join-Path $vsPath 'Common7/Tools/VsDevCmd.bat'
     $developerEnvironment = & $env:ComSpec /d /c "call `"$devCmd`" -no_logo -arch=x64 -host_arch=x64 >nul && set"
     if ($LASTEXITCODE -ne 0) { throw 'Could not activate Visual Studio x64 developer environment.' }
-    foreach ($line in $developerEnvironment) {
-        if ($line -match '^([^=]+)=(.*)$') {
-            [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], 'Process')
-        }
-    }
+    Import-VisualStudioEnvironment $developerEnvironment
     if (-not $env:WindowsSdkDir -or -not (Test-Path -LiteralPath $env:WindowsSdkDir)) {
         throw 'Windows SDK is missing. Add a Windows 10/11 SDK to Visual Studio Build Tools.'
     }

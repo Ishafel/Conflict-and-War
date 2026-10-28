@@ -96,3 +96,9 @@ The owner rejected the command map as the main screen after seeing it in-game. T
 - **FR-012**: The Everon button must start the slice in both Windows Game and GameDemo using one shared registration implementation; other demo modules remain unchanged.
 - **FR-013**: Left-click an owned soldier to select it, then left-click empty terrain to move the selection. Clicking another soldier changes selection. Right-click move/cancel remains supported. Both ordinary and rapid repeated clicks must reach the command viewport through normal UI dispatch. Sidebar clicks never issue orders.
 - **SC-006**: Native Windows regressions reproduce a large rotated building overlap, GameDemo menu entry, and selection plus actual movement using cursor/button input through the UI event path, without directly invoking the viewport handler.
+
+## CI failures — 2026-10-28
+
+- **FR-014**: Windows developer-environment import must preserve the caller's VCPKG_ROOT (including its absence, so the repository default is chosen), while importing required VS/SDK variables. Existing non-checkout directories and modified/wrong-baseline checkouts must still be rejected.
+- **FR-015**: macOS CI must use Clang paired with the active Xcode SDK for both project and vcpkg dependency compilation. The pinned enkiTS source must include its directly used type_traits header through a reproducible overlay patch. Keep vcpkg baseline, dependency versions, strict errors, native three-platform matrix and all tests.
+- **SC-007**: A regression demonstrates that a VS-provided VCPKG_ROOT cannot override the caller; Windows prepare succeeds against the pinned checkout and invalid paths fail. GitHub's next Windows/macOS runs must be inspected for native configure/build/test outcomes, recording any subsequent blockers separately from gameplay readiness.

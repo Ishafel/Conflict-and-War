@@ -80,3 +80,11 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 - [x] T030 Вынести RTS-регистрацию в общий метод GameApplication и вызвать в GameDemoApplication; проверить menu → Everon в обоих executable — FR-012, SC-006.
 - [x] T031 Реализовать контекстный ЛКМ и повторные клики в session.sqf/RTSViewport.hpp, обновить подсказки; проверить выбор, смену выбора, движение и изоляцию панели через курсор/кнопки — FR-013, SC-006.
 - [x] T032 Выполнить Windows build, целевые C++ и игровые регрессии, записать результаты и оставшиеся ограничения в verification.md; выполнить повторную сверку Spec Kit — FR-008/011–013, SC-006.
+
+## Phase 10: CI failure repair
+
+- [x] T033 Сохранить caller VCPKG_ROOT при импорте VS в scripts/windows-build.ps1; добавить реальный тест функции в tests/scripts/test_windows_build_environment.ps1 и проверку valid/invalid Prepare — FR-014, SC-007.
+- [ ] T034 Добавить cmake/vcpkg-overlay-ports/enkits с минимальным type_traits patch и прежними upstream revision/hash/license; проверить применение и сборку на Windows, затем native CI — FR-015, SC-007.
+- [x] T035 Выбрать xcrun Clang/SDK в .github/workflows/build.yml и docs/building.md, сохранить всю матрицу/проверки и загрузку диагностических журналов — FR-015, SC-007.
+- [ ] T036 Выполнить локальные проверки, коммит и push в существующий PR develop, проверить новый GitHub run и записать реальные результаты/оставшиеся блокеры в verification.md — FR-008/014/015, SC-007.
+- [x] T037 Восстановить отсутствующее в опубликованном GameApplication.cpp определение RegisterRTSModule, пересобрать Game/GameDemo из текущих исходников и повторить menu/menu_demo — FR-012, SC-006/007. Выявлено полной повторной сборкой после исправления CI bootstrap; предыдущий binary-прогон не доказывает собираемость коммита 0867ffc.
