@@ -1,5 +1,5 @@
 // FR-003/005/006/008, SC-002: exercise real mission callbacks and simulation.
-triSimUntil { (count CWR_RTS) == 16 }
+triSimUntil { (count CWR_RTS) == 18 }
 triAssertEq [CWR_RTS select 0,3000]
 triAssert [alive (CWR_RTS select 1)]
 _rejected=call CWR_Train

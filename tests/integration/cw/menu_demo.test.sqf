@@ -10,7 +10,7 @@ triSendKey 41
 triSimFrames 5
 triAssertEq [triDisplay,0]
 triClick 7390
-triSimUntil { (count CWR_RTS)==16 }
+triSimUntil { (count CWR_RTS)==18 }
 triSimUntil { dialog }
 triAssert [(triGetControlVisible 7301)]
 triScreenshot "everon_from_menu"

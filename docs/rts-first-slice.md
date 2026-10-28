@@ -16,4 +16,6 @@ Click BUILD and the barracks card, then an open site22–150m from HQ. Right-cli
 
 Original generated artwork and prompts: [ARTWORK.md](../content/cw/ui/ARTWORK.md). Requirements and tasks: [Spec Kit feature](../specs/003-everon-rts-slice/spec.md), [tasks](../specs/003-everon-rts-slice/tasks.md). Validation and remaining gaps: [verification](../specs/003-everon-rts-slice/verification.md).
 
+Placement now has a translucent green/red model following the mouse: green accepts, red rejects. Right-click cancels free. Drag the left mouse button over infantry to select a group and then click the ground to move it; individual clicks select the model on screen. Production portraits reveal clockwise with queue counts and completion feedback. CENTER HQ is a camera shortcut; the inactive HQ ONLINE production-grid placeholder was removed.
+
 Next feature candidates (separate Spec Kit specifications): resource gathering/economy, building ghosts and terrain/slope previews, box selection and formation orders, opponents/combat/win conditions, more buildings and vehicles, fog of war, save/load and multiplayer. The first slice does not claim these systems.

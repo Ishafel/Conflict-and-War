@@ -95,3 +95,12 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 - [x] T039 Пересобрать FoundationTests, выполнить potime и полный Foundation на Windows, записать native Intel build PASS / 3 timing failures и ARM capacity cancellation для 35f0346 в verification.md — FR-008/016/017, SC-008.
 - [ ] T040 Сделать коммит и обновить существующий PR develop, проверить новый Intel/Windows прогон; ARM capacity не скрывать и матрицу не менять — FR-016/017, SC-008.
 - [ ] T041 Отдельно оценить аппаратно-зависимые пороги precision/performance в tests/unit/engine/Poseidon/Foundation/Framework/test_potime.cpp и перенести требования пропускной способности в воспроизводимые benchmark-проверки. Эти тесты в текущем native прогоне прошли; это legacy follow-up вне трёх воспроизведённых отказов — Constitution III.
+
+## Phase 12: Interactive RTS feedback
+
+- [x] T042 Добавить и проверить экранную проекцию/границы выбора в RTSProjection.hpp и RTSViewport, передавать hit object, обновить session.sqf для выбора и групп — FR-019/020, SC-009.
+- [x] T043 Добавить захват ЛКМ, порог перетаскивания, рамку, завершение/отмену и индикаторы всей группы в RTSViewport — FR-020, SC-009.
+- [x] T044 Добавить render-only ghost казармы и общий validator с unregistered probe, зелёный/красный цвет, очистку при смене режима и выходе — FR-018, SC-009.
+- [x] T045 Добавить CT_RTS_PRODUCTION с круговым reveal, счётчиком и completion feedback; убрать HQ ONLINE и уточнить CENTER HQ в resources.cpp — FR-021/022, SC-009.
+- [x] T046 Обновить contracts/data-model/quickstart и Trident сценарии: точные клики/zoom, рамка двух юнитов/движение, preview/баланс/отмена, фазы production в 720p/1080p; выполнить native build, unit и игровые проверки — FR-018–022, SC-009.
+- [x] T047 Записать доказательства и ограничения в verification.md, сверить Spec Kit, сделать коммит и обновить PR develop; оставить новую игру открытой — FR-008/018–022, SC-009.

@@ -190,6 +190,7 @@ CMD_RADIO_CUSTOM_0
 #define CT_MAP							100
 #define CT_MAP_MAIN					101
 #define CT_RTS_VIEWPORT                 102
+#define CT_RTS_PRODUCTION               103
 
 // Static styles
 #define ST_HPOS						0x0F

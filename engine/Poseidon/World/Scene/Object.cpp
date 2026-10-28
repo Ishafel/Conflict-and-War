@@ -1,3 +1,4 @@
+#include <Poseidon/Graphics/Rendering/WholeObjectBlend.hpp>
 #include <Poseidon/Core/Application.hpp>
 
 #include <Poseidon/World/Scene/Object.hpp>
@@ -741,6 +742,7 @@ int Object::PassNum(int lod)
     {
         return GEngine->CanGrass() ? 2 : 0;
     }
+    if (render::UsesWholeObjectBlend(GetObjSpecial())) return 2;
 #if !ALPHA_SPLIT
     constexpr render::Backend alphaMask = render::Backend::IsAlpha | render::Backend::IsLight;
     if ((specT.backend & alphaMask) == render::Backend::None)

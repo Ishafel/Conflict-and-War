@@ -65,8 +65,8 @@ class CWR_Command
 {
     idd=7300; movingEnable=0;
     controlsBackground[]={"Steel","Panel","Edge","BlueTop","MapFrame","Slot1","Slot2","Slot3","Slot4","Slot5","Slot6","Slot7","Slot8"};
-    controls[]={"World","Map","Header","Theatre","Credits","Status","TabBuild","TabInfantry","BuildArt","TrainArt","Build","Train","BuildLabel","TrainLabel","Other","Production","Home","Exit","Help"};
-    class World: CWR_Text { type=102; idc=7301; x=0; y=0; w=0.76; h=1; onWorldClick="call CWR_WorldClick"; onCameraInput="call CWR_CameraInput"; selectionPosition="call CWR_SelectionPosition"; };
+    controls[]={"World","Map","Header","Theatre","Credits","Status","TabBuild","TabInfantry","BuildArt","TrainArt","Build","Train","BuildLabel","TrainLabel","BuildSweep","TrainSweep","Production","Home","Exit","Help"};
+    class World: CWR_Text { type=102; idc=7301; x=0; y=0; w=0.76; h=1; onWorldClick="call CWR_WorldClick"; onCameraInput="call CWR_CameraInput"; selectionPosition="call CWR_SelectionPosition"; selectableUnits="call CWR_SelectableUnits"; onBoxSelect="_units call CWR_SetSelection"; placementActive="(CWR_RTS select 7)==1"; placementClass="Barracks"; placementValid="call CWR_PreviewSite"; onPreviewHidden="CWR_RTS set [17,[]]"; };
     class Steel: CWR_Text { x=0.76; y=0; w=0.24; h=1; colorBackground[]={0.40,0.44,0.47,1}; };
     class Panel: CWR_Text { x=0.775; y=0.02; w=0.215; h=0.96; colorBackground[]={0.055,0.075,0.10,1}; };
     class Edge: CWR_Text { x=0.76; y=0; w=0.003; h=1; colorBackground[]={0.03,0.10,0.18,1}; };
@@ -85,7 +85,8 @@ class CWR_Command
     class Train: CWR_Card { type=11; style=2; text=""; idc=7311; action="call CWR_Train"; };
     class BuildLabel: CWR_Text { idc=7330; x=0.782; y=0.49; w=0.096; h=0.04; style=2; sizeEx=0.018; text="BARRACKS / 1000"; colorBackground[]={0,0,0,0.8}; };
     class TrainLabel: CWR_Text { idc=7331; x=0.782; y=0.49; w=0.096; h=0.04; style=2; sizeEx=0.018; text="RIFLEMAN / 100"; colorBackground[]={0,0,0,0.8}; };
-    class Other: CWR_Slot { x=0.885; y=0.39; text="HQ\nONLINE"; colorText[]={0.42,0.58,0.69,1}; style=18; };
+    class BuildSweep: CWR_Text { type=103; idc=7350; x=0.782; y=0.39; w=0.096; h=0.10; productionState="call CWR_BuildCardState"; sizeEx=0.019; };
+    class TrainSweep: BuildSweep { idc=7351; productionState="call CWR_TrainCardState"; };
     class Slot1: CWR_Slot {};
     class Slot2: CWR_Slot { x=0.885; };
     class Slot3: CWR_Slot { y=0.69; };
@@ -95,7 +96,7 @@ class CWR_Command
     class Slot7: CWR_Slot { x=0.765; y=0.39; w=0.007; h=0.49; colorBackground[]={0.1,0.35,0.55,1}; };
     class Slot8: CWR_Slot { x=0.765; y=0.7; w=0.007; h=0.18; colorBackground[]={0.13,0.65,0.85,1}; };
     class Status: CWR_Text { idc=7303; x=0.02; y=0.87; w=0.70; h=0.10; style=16; sizeEx=0.023; text="HQ online"; colorBackground[]={0.02,0.03,0.04,0.8}; };
-    class Home: CWR_Button { idc=7315; x=0.782; y=0.9; w=0.096; h=0.04; text="HQ"; action="call CWR_Home"; };
+    class Home: CWR_Button { idc=7315; x=0.782; y=0.9; w=0.096; h=0.04; text="CENTER HQ"; sizeEx=0.018; action="call CWR_Home"; };
     class Exit: CWR_Button { idc=7316; x=0.885; y=0.9; w=0.096; h=0.04; text="MENU"; action="call CWR_Stop"; };
-    class Help: CWR_Text { x=0.02; y=0.02; w=0.70; h=0.04; sizeEx=0.020; text="EVERON / WASD PAN / WHEEL ZOOM / CLICK UNIT, THEN GROUND TO MOVE"; colorText[]={0.8,0.9,1,1}; colorBackground[]={0.02,0.03,0.04,0.7}; };
+    class Help: CWR_Text { x=0.02; y=0.02; w=0.70; h=0.04; sizeEx=0.020; text="EVERON / WASD PAN / WHEEL ZOOM / CLICK UNIT / DRAG TO SELECT / CLICK GROUND TO MOVE"; colorText[]={0.8,0.9,1,1}; colorBackground[]={0.02,0.03,0.04,0.7}; };
 };

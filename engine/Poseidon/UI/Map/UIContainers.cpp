@@ -597,6 +597,8 @@ Control* ControlsContainer::OnCreateCtrl(int type, int idc, const ParamEntry& cl
         }
         case CT_RTS_VIEWPORT:
             return new RTSViewport(this, idc, cls);
+        case CT_RTS_PRODUCTION:
+            return new RTSProduction(this, idc, cls);
     }
     return nullptr;
 }

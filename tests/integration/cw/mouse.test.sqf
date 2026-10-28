@@ -1,5 +1,5 @@
 // FR-013/SC-006: cursor/button state, normal UI hit testing (no direct control click).
-triSimUntil { (count CWR_RTS)==16 }
+triSimUntil { (count CWR_RTS)==18 }
 triSimUntil { dialog }
 _site=[];
 {_dx=_x; {_p=[6519.04+_dx,6473.68+_x,0]; if ((count _site)==0) then {if ((_p call CWR_SiteError)=="") then {_site=+_p}}} forEach [-60,-40,-20,20,40,60]} forEach [-60,-40,-20,20,40,60];
