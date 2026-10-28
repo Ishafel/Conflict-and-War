@@ -84,7 +84,14 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 ## Phase 10: CI failure repair
 
 - [x] T033 Сохранить caller VCPKG_ROOT при импорте VS в scripts/windows-build.ps1; добавить реальный тест функции в tests/scripts/test_windows_build_environment.ps1 и проверку valid/invalid Prepare — FR-014, SC-007.
-- [ ] T034 Добавить cmake/vcpkg-overlay-ports/enkits с минимальным type_traits patch и прежними upstream revision/hash/license; проверить применение и сборку на Windows, затем native CI — FR-015, SC-007.
+- [x] T034 Добавить cmake/vcpkg-overlay-ports/enkits с минимальным type_traits patch и прежними upstream revision/hash/license; проверить применение и сборку на Windows, затем native CI — FR-015, SC-007. Native Intel configure/build PASS в run 40726729161; ARM capacity остаётся отдельно открытой.
 - [x] T035 Выбрать xcrun Clang/SDK в .github/workflows/build.yml и docs/building.md, сохранить всю матрицу/проверки и загрузку диагностических журналов — FR-015, SC-007.
-- [ ] T036 Выполнить локальные проверки, коммит и push в существующий PR develop, проверить новый GitHub run и записать реальные результаты/оставшиеся блокеры в verification.md — FR-008/014/015, SC-007.
+- [x] T036 Выполнить локальные проверки, коммит и push в существующий PR develop, проверить новый GitHub run и записать реальные результаты/оставшиеся блокеры в verification.md — FR-008/014/015, SC-007. Результат 35f0346: Windows SUCCESS, Intel build SUCCESS / 3 timing failures, ARM capacity cancellation; продолжение T038–040.
 - [x] T037 Восстановить отсутствующее в опубликованном GameApplication.cpp определение RegisterRTSModule, пересобрать Game/GameDemo из текущих исходников и повторить menu/menu_demo — FR-012, SC-006/007. Выявлено полной повторной сборкой после исправления CI bootstrap; предыдущий binary-прогон не доказывает собираемость коммита 0867ffc.
+
+## Phase 11: Native timing test correction
+
+- [x] T038 Заменить абсолютные сроки пробуждения в трёх падающих potime-тестах на независимые chrono-скобки, сохранив минимальные длительности и единицы; добавить delayed workload и отрицательные показания — FR-016, SC-008.
+- [x] T039 Пересобрать FoundationTests, выполнить potime и полный Foundation на Windows, записать native Intel build PASS / 3 timing failures и ARM capacity cancellation для 35f0346 в verification.md — FR-008/016/017, SC-008.
+- [ ] T040 Сделать коммит и обновить существующий PR develop, проверить новый Intel/Windows прогон; ARM capacity не скрывать и матрицу не менять — FR-016/017, SC-008.
+- [ ] T041 Отдельно оценить аппаратно-зависимые пороги precision/performance в tests/unit/engine/Poseidon/Foundation/Framework/test_potime.cpp и перенести требования пропускной способности в воспроизводимые benchmark-проверки. Эти тесты в текущем native прогоне прошли; это legacy follow-up вне трёх воспроизведённых отказов — Constitution III.

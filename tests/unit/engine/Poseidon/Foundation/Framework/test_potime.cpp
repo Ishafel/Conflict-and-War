@@ -3,10 +3,50 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <thread>
 #include <Poseidon/Foundation/Framework/DebugLog.hpp>
 #include <Poseidon/Foundation/Common/Global.hpp> // For unsigned64 typedef
 #include <Poseidon/Foundation/Common/Win.h>      // For Sleep on Windows
 #include <Poseidon/Foundation/Framework/PoTime.hpp>
+
+namespace
+{
+using ReferenceClock = std::chrono::steady_clock;
+struct TimeSample
+{
+    ReferenceClock::time_point before;
+    unsigned64 microseconds;
+    ReferenceClock::time_point after;
+};
+
+TimeSample SampleSystemTime()
+{
+    const auto before = ReferenceClock::now();
+    const auto value = Poseidon::Foundation::getSystemTime();
+    return {before, value, ReferenceClock::now()};
+}
+
+bool MatchesReferenceInterval(const TimeSample& start, const TimeSample& end)
+{
+    if (end.microseconds < start.microseconds)
+        return false;
+    const double measured = static_cast<double>(end.microseconds - start.microseconds);
+    const double inner = std::chrono::duration<double, std::micro>(end.before - start.after).count();
+    const double outer = std::chrono::duration<double, std::micro>(end.after - start.before).count();
+    // PoTime's legacy ftime fallback has millisecond quantization. This allowance
+    // covers clock resolution, not scheduler latency: both clocks see that latency.
+    constexpr double quantizationUs = 1000.0;
+    return measured + quantizationUs >= inner && measured <= outer + quantizationUs;
+}
+
+unsigned64 RequireReferenceInterval(const TimeSample& start, const TimeSample& end)
+{
+    CAPTURE(start.microseconds, end.microseconds);
+    REQUIRE(MatchesReferenceInterval(start, end));
+    return end.microseconds - start.microseconds;
+}
+} // namespace
 
 // System Time Initialization
 
@@ -157,84 +197,69 @@ TEST_CASE("potime - Poseidon::Foundation::getSystemTime timing accuracy", "[fram
 {
     SECTION("Can measure millisecond intervals")
     {
-        unsigned64 start = Poseidon::Foundation::getSystemTime();
-
-        // Sleep for a known duration (10ms)
+        const auto start = SampleSystemTime();
         SLEEP_MS(10);
-
-        unsigned64 end = Poseidon::Foundation::getSystemTime();
-        unsigned64 elapsed_us = end - start;
-        double elapsed_ms = elapsed_us / 1000.0;
-
-        // Should be close to 10ms (allow �5ms tolerance for scheduler variance)
-        REQUIRE(elapsed_ms >= 5.0);
-        REQUIRE(elapsed_ms <= 50.0); // Generous upper bound for slow systems
+        const auto end = SampleSystemTime();
+        const auto elapsedUs = RequireReferenceInterval(start, end);
+        REQUIRE(elapsedUs >= 5000);
     }
 
     SECTION("Can measure longer intervals")
     {
-        unsigned64 start = Poseidon::Foundation::getSystemTime();
-
-        // Sleep for 50ms
+        const auto start = SampleSystemTime();
         SLEEP_MS(50);
-
-        unsigned64 end = Poseidon::Foundation::getSystemTime();
-        unsigned64 elapsed_us = end - start;
-        double elapsed_ms = elapsed_us / 1000.0;
-
-        // Should be close to 50ms (allow �10ms tolerance)
-        REQUIRE(elapsed_ms >= 40.0);
-        REQUIRE(elapsed_ms <= 100.0); // Generous upper bound
+        const auto end = SampleSystemTime();
+        const auto elapsedUs = RequireReferenceInterval(start, end);
+        REQUIRE(elapsedUs >= 40000);
     }
 }
 
-// Sleep Functionality
-
+// Sleep is allowed to overshoot when the OS schedules another thread.
 TEST_CASE("potime - SLEEP_MS macro", "[framework][potime][sleep]")
 {
     SECTION("Sleep for 1 millisecond")
     {
-        unsigned64 start = Poseidon::Foundation::getSystemTime();
-
+        const auto start = SampleSystemTime();
         SLEEP_MS(1);
-
-        unsigned64 end = Poseidon::Foundation::getSystemTime();
-        unsigned64 elapsed_us = end - start;
-
-        // Should have slept at least 1ms (may be longer due to scheduler)
-        // 1ms = 1000 microseconds
-        // Allow 0-10ms range (scheduler may round up)
-        REQUIRE(elapsed_us >= 0);     // May be zero if scheduler resolution is poor
-        REQUIRE(elapsed_us <= 50000); // Shouldn't be more than 50ms
+        RequireReferenceInterval(start, SampleSystemTime());
     }
 
     SECTION("Sleep for 10 milliseconds")
     {
-        unsigned64 start = Poseidon::Foundation::getSystemTime();
-
+        const auto start = SampleSystemTime();
         SLEEP_MS(10);
-
-        unsigned64 end = Poseidon::Foundation::getSystemTime();
-        unsigned64 elapsed_us = end - start;
-        double elapsed_ms = elapsed_us / 1000.0;
-
-        // Should be approximately 10ms (allow scheduler variance)
-        REQUIRE(elapsed_ms >= 1.0);  // At least 1ms
-        REQUIRE(elapsed_ms <= 50.0); // Not more than 50ms
+        const auto elapsedUs = RequireReferenceInterval(start, SampleSystemTime());
+        REQUIRE(elapsedUs >= 1000);
     }
 
     SECTION("Sleep for zero milliseconds")
     {
-        unsigned64 start = Poseidon::Foundation::getSystemTime();
-
-        SLEEP_MS(0); // Should yield CPU or return immediately
-
-        unsigned64 end = Poseidon::Foundation::getSystemTime();
-        unsigned64 elapsed_us = end - start;
-
-        // Should be very fast (< 10ms)
-        REQUIRE(elapsed_us < 10000);
+        const auto start = SampleSystemTime();
+        SLEEP_MS(0);
+        RequireReferenceInterval(start, SampleSystemTime());
     }
+}
+
+TEST_CASE("potime - scheduler delays preserve interval accuracy", "[framework][potime][sleep]")
+{
+    const auto start = SampleSystemTime();
+    SLEEP_MS(50);
+    // Deliberate extra scheduling/workload delay must be reflected in both clocks.
+    std::this_thread::sleep_for(std::chrono::milliseconds(80));
+    const auto elapsedUs = RequireReferenceInterval(start, SampleSystemTime());
+    REQUIRE(elapsedUs >= 120000);
+}
+
+TEST_CASE("potime - interval oracle rejects invalid clock readings", "[framework][potime]")
+{
+    const ReferenceClock::time_point epoch{};
+    const auto finish = epoch + std::chrono::milliseconds(50);
+    const TimeSample start{epoch, 10000, epoch};
+    REQUIRE(MatchesReferenceInterval(start, {finish, 60000, finish}));
+    REQUIRE_FALSE(MatchesReferenceInterval(start, {finish, 10000, finish})); // stopped
+    REQUIRE_FALSE(MatchesReferenceInterval(start, {finish, 10050, finish})); // milliseconds
+    REQUIRE_FALSE(MatchesReferenceInterval(start, {finish, 50010000, finish})); // nanoseconds
+    REQUIRE_FALSE(MatchesReferenceInterval(start, {finish, 9999, finish})); // backwards
 }
 
 TEST_CASE("potime - Section timing", "[framework][potime]")
@@ -250,30 +275,14 @@ TEST_CASE("potime - Section timing", "[framework][potime]")
 
 TEST_CASE("potime - Platform consistency", "[framework][potime]")
 {
-    SECTION("Time values are consistent across calls")
+    TimeSample previous = SampleSystemTime();
+    for (int i = 0; i < 5; ++i)
     {
-        // Make multiple measurements
-        const int num_samples = 5;
-        unsigned64 samples[num_samples];
-
-        for (int i = 0; i < num_samples; i++)
-        {
-            samples[i] = Poseidon::Foundation::getSystemTime();
-            SLEEP_MS(10);
-        }
-
-        // Each measurement should be larger than previous
-        for (int i = 1; i < num_samples; i++)
-        {
-            REQUIRE(samples[i] > samples[i - 1]);
-
-            // Difference should be approximately 10ms (�5ms tolerance)
-            unsigned64 diff_us = samples[i] - samples[i - 1];
-            double diff_ms = diff_us / 1000.0;
-
-            REQUIRE(diff_ms >= 5.0);
-            REQUIRE(diff_ms <= 50.0);
-        }
+        SLEEP_MS(10);
+        const auto current = SampleSystemTime();
+        const auto elapsedUs = RequireReferenceInterval(previous, current);
+        REQUIRE(elapsedUs >= 5000);
+        previous = current;
     }
 }
 
