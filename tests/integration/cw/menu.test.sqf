@@ -10,12 +10,12 @@ triSendKey 41
 triSimFrames 5
 triAssertEq [triDisplay,0]
 triClick 7390
-triSimUntil { (count CWR_RTS)==19 }
+triSimUntil { (count CWR_RTS)==20 }
 triSimUntil { dialog }
 triAssertEq [triGetCinemaBorder,false]
 triAssert [(triGetControlVisible 7301)]
 triAssert [isObjectHidden player]
-triAssertEq [CWR_RTS select 13,70]
+triAssertEq [CWR_RTS select 13,55]
 triScreenshot "everon_from_menu"
 triClick 7316
 triSimUntil { triDisplay==0 }

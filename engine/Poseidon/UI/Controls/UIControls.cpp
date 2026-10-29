@@ -2246,7 +2246,7 @@ CButton::CButton(ControlsContainer* parent, const ParamEntry& cls, float x, floa
     GetValue(_clickSound, cls >> "soundClick");
     GetValue(_escapeSound, cls >> "soundEscape");
 
-    InitColors();
+    InitColors(cls);
 
     entry = cls.FindEntry("action");
     if (entry)
@@ -2276,7 +2276,7 @@ CButton::CButton(ControlsContainer* parent, int idc, const ParamEntry& cls) : Co
     GetValue(_clickSound, cls >> "soundClick");
     GetValue(_escapeSound, cls >> "soundEscape");
 
-    InitColors();
+    InitColors(cls);
 
     entry = cls.FindEntry("action");
     if (entry)
@@ -2285,8 +2285,20 @@ CButton::CButton(ControlsContainer* parent, int idc, const ParamEntry& cls) : Co
     }
 }
 
-void CButton::InitColors()
+void CButton::InitColors(const ParamEntry& cls)
 {
+    // FR-030/032: local opt-in palette; legacy wrapper buttons keep their style.
+    const auto* flat = cls.FindEntry("flatStyle");
+    _flatStyle = flat && bool(*flat);
+    if (_flatStyle)
+    {
+        _color1 = GetPackedColor(cls >> "colorBackground");
+        _color2 = GetPackedColor(cls >> "colorBackgroundActive");
+        _color3 = GetPackedColor(cls >> "colorBorder");
+        _color4 = GetPackedColor(cls >> "colorDisabled");
+        _color5 = GetPackedColor(cls >> "colorText");
+        return;
+    }
     const ParamEntry& clsButton = Pars >> "CfgWrapperUI" >> "Button";
     _color1 = GetPackedColor(clsButton >> "color1");
     _color2 = GetPackedColor(clsButton >> "color2");
@@ -2366,11 +2378,12 @@ void CButton::OnDraw(float alpha)
     float hh = toInt(_h * h);
 
     int pos = _style & ST_HPOS;
-    bool selected = IsFocused() || IsDefault() && !_parent->GetFocused()->CanBeDefault();
+    const auto* focused = _parent->GetFocused();
+    bool selected = IsFocused() || (IsDefault() && (!focused || !focused->CanBeDefault()));
     bool pushed = IsEnabled() && _state;
 
-    float offsetX = pushed ? 0.003 : 0;
-    float offsetY = pushed ? 0.004 : 0;
+    float offsetX = pushed ? (_flatStyle ? 0.001f : 0.003f) : 0;
+    float offsetY = pushed ? (_flatStyle ? 0.0015f : 0.004f) : 0;
 
     PackedColor color1 = ModAlpha(_color1, alpha);
     PackedColor color2 = ModAlpha(_color2, alpha);
@@ -2379,44 +2392,64 @@ void CButton::OnDraw(float alpha)
     PackedColor color5 = ModAlpha(_color5, alpha);
     PackedColor ftColor = ModAlpha(_ftColor, alpha);
 
-    if (pushed)
+    if (_flatStyle)
     {
-        DrawLeft(0, color1);
-        DrawTop(0, color1);
-        DrawLeft(1, color2);
-        DrawTop(1, color2);
-        DrawBottom(1, color4);
-        DrawRight(1, color4);
-        DrawBottom(0, color5);
-        DrawRight(0, color5);
+        const auto& input = InputSubsystem::Instance();
+        const bool hover = IsInside(0.5f + input.GetCursorX() * 0.5f, 0.5f + input.GetCursorY() * 0.5f);
+        const PackedColor fill = ModAlpha(IsEnabled() && (hover || selected || pushed) ? _color2 : _color1, alpha);
+        const PackedColor border = ModAlpha(IsEnabled() && (hover || selected) ? _color5 : _color3, alpha);
+        const MipInfo mip = GLOB_ENGINE->TextBank()->UseMipmap(nullptr, 0, 0);
+        GLOB_ENGINE->Draw2D(mip, fill, Rect2DPixel(xx, yy, ww, hh));
+        DrawTop(0, border);
+        DrawBottom(0, border);
+        DrawLeft(0, border);
+        DrawRight(0, border);
+        if (!IsEnabled())
+            ftColor = ModAlpha(_color4, alpha);
     }
     else
     {
-        DrawLeft(0, color5);
-        DrawTop(0, color5);
-        DrawLeft(1, color4);
-        DrawTop(1, color4);
-        DrawBottom(1, color2);
-        DrawRight(1, color2);
-        DrawBottom(0, color1);
-        DrawRight(0, color1);
-    }
+        if (pushed)
+        {
+            DrawLeft(0, color1);
+            DrawTop(0, color1);
+            DrawLeft(1, color2);
+            DrawTop(1, color2);
+            DrawBottom(1, color4);
+            DrawRight(1, color4);
+            DrawBottom(0, color5);
+            DrawRight(0, color5);
+        }
+        else
+        {
+            DrawLeft(0, color5);
+            DrawTop(0, color5);
+            DrawLeft(1, color4);
+            DrawTop(1, color4);
+            DrawBottom(1, color2);
+            DrawRight(1, color2);
+            DrawBottom(0, color1);
+            DrawRight(0, color1);
+        }
 
-    Texture* background = GLOB_SCENE->Preloaded(TextureWhite);
-    MipInfo mip = GLOB_ENGINE->TextBank()->UseMipmap(background, 0, 0);
-    GLOB_ENGINE->Draw2D(mip, color3, Rect2DPixel(xx + 2, yy + 2, ww - 4, hh - 4));
-    // GLOB_ENGINE->TextBank()->ReleaseMipmap();
+        Texture* background = GLOB_SCENE->Preloaded(TextureWhite);
+        MipInfo mip = GLOB_ENGINE->TextBank()->UseMipmap(background, 0, 0);
+        GLOB_ENGINE->Draw2D(mip, color3, Rect2DPixel(xx + 2, yy + 2, ww - 4, hh - 4));
+        // GLOB_ENGINE->TextBank()->ReleaseMipmap();
 
-    if (selected)
-    {
-        float ox = toInt(offsetX * w);
-        float oy = toInt(offsetY * h);
-        GLOB_ENGINE->DrawLine(Line2DPixel(xx + 6 + ox, yy + 6 + oy, xx + ww - 7 + ox, yy + 6 + oy), ftColor, ftColor);
-        GLOB_ENGINE->DrawLine(Line2DPixel(xx + ww - 7 + ox, yy + 6 + oy, xx + ww - 7 + ox, yy + hh - 7 + oy), ftColor,
-                              ftColor);
-        GLOB_ENGINE->DrawLine(Line2DPixel(xx + ww - 7 + ox, yy + hh - 7 + oy, xx + 6 + ox, yy + hh - 7 + oy), ftColor,
-                              ftColor);
-        GLOB_ENGINE->DrawLine(Line2DPixel(xx + 6 + ox, yy + hh - 7 + oy, xx + 6 + ox, yy + 6 + oy), ftColor, ftColor);
+        if (selected)
+        {
+            float ox = toInt(offsetX * w);
+            float oy = toInt(offsetY * h);
+            GLOB_ENGINE->DrawLine(Line2DPixel(xx + 6 + ox, yy + 6 + oy, xx + ww - 7 + ox, yy + 6 + oy), ftColor,
+                                  ftColor);
+            GLOB_ENGINE->DrawLine(Line2DPixel(xx + ww - 7 + ox, yy + 6 + oy, xx + ww - 7 + ox, yy + hh - 7 + oy),
+                                  ftColor, ftColor);
+            GLOB_ENGINE->DrawLine(Line2DPixel(xx + ww - 7 + ox, yy + hh - 7 + oy, xx + 6 + ox, yy + hh - 7 + oy),
+                                  ftColor, ftColor);
+            GLOB_ENGINE->DrawLine(Line2DPixel(xx + 6 + ox, yy + hh - 7 + oy, xx + 6 + ox, yy + 6 + oy), ftColor,
+                                  ftColor);
+        }
     }
 
     float left, top;

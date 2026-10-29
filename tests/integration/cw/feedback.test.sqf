@@ -1,5 +1,5 @@
 // FR-018..022: actual pointer preview, production phases, exact clicks and group drag.
-triSimUntil { (count CWR_RTS)==19 }
+triSimUntil { (count CWR_RTS)==20 }
 triSimUntil { dialog }
 triAssertEq [triGetCinemaBorder,false]
 triAssertExcludes [triVisibleTexts,"ONLINE"]
@@ -148,6 +148,14 @@ triMouseLeft 0
 triSimFrames 3
 triAssertEq [CWR_RTS select 15,_target]
 triAssertEq [CWR_RTS select 0,1800]
+// Inspect an actual developed base, using the same player camera and units.
+_baseA=getPos (CWR_RTS select 1)
+_baseB=getPos (CWR_RTS select 2)
+CWR_RTS set [12,[((_baseA select 0)+(_baseB select 0))*0.5-12,((_baseA select 1)+(_baseB select 1))*0.5-12,0]]
+CWR_RTS set [13,75]
+call CWR_UpdateCamera
+triSimFrames 12
+triScreenshot "base_overview"
 call CWR_Clear
 triAssertEq [isObjectHidden player,false]
 call CWR_Start

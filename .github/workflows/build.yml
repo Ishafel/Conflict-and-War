@@ -70,7 +70,7 @@ jobs:
         if: runner.os == 'macOS'
         run: ctest --preset ${{ matrix.preset }}
       - name: RTS projection and boolean regression tests without game data
-        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure -R "^PoseidonTests - (RTS (ray|drag|production|whole)|tri assertions distinguish)"
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure -R "^PoseidonTests - (RTS (ray|drag|production|whole|camera)|tri assertions distinguish)"
       - name: Compile Rust workspace
         if: runner.os == 'macOS'
         run: cargo build --workspace --locked

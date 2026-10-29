@@ -59,7 +59,10 @@ bool RTSViewport::OnKeyDown(unsigned key, unsigned, unsigned)
         return false;
     _keys[index] = true;
     if (index == 8)
+    {
+        _motion.Reset();
         CameraInput(0, 0, 0, true);
+    }
     return true;
 }
 
@@ -89,6 +92,7 @@ RTSViewport::RTSViewport(ControlsContainer* parent, int idc, const ParamEntry& c
     _placementValid = optionalText("placementValid");
     _placementClass = optionalText("placementClass");
     _previewClear = optionalText("onPreviewHidden");
+    _cameraResetToken = optionalText("cameraResetToken");
     _cameraInput = cls >> "onCameraInput";
     if (const auto* selection = cls.FindEntry("selectionPosition"))
         _selection = *selection;
@@ -407,15 +411,39 @@ void RTSViewport::OnDraw(float /*alpha*/)
     {
         _pressed = false;
         _keys.fill(false);
+        _motion.Reset();
         _lastFrame = 0;
-        if (_previewCandidate) Evaluate(_previewClear);
+        if (_previewCandidate)
+            Evaluate(_previewClear);
         _ghost = nullptr;
         _previewCandidate = nullptr;
         return;
     }
+    // Home may be invoked through keyboard focus or a programmatic button click,
+    // without moving the pointer out of the play area. Observe the mission's
+    // reset epoch before consuming any buffered camera movement or wheel input.
+    if (_cameraResetToken.GetLength() > 0)
+    {
+        const GameValue value = Evaluate(_cameraResetToken);
+        if (value.GetType() == GameScalar)
+        {
+            const float token = GameScalarType(value);
+            if (std::isfinite(token))
+            {
+                if (_lastCameraResetToken && *_lastCameraResetToken != token)
+                    _motion.Reset();
+                _lastCameraResetToken = token;
+            }
+        }
+    }
     DrawDrag();
     const auto& input = InputSubsystem::Instance();
-    UpdatePreview(0.5f + input.GetCursorX() * 0.5f, 0.5f + input.GetCursorY() * 0.5f);
+    const float pointerX = 0.5f + input.GetCursorX() * 0.5f, pointerY = 0.5f + input.GetCursorY() * 0.5f;
+    UpdatePreview(pointerX, pointerY);
+    // Leaving the play area cancels wheel intent. Keyboard panning remains
+    // available while the sidebar owns focus.
+    if (!IsInside(pointerX, pointerY))
+        _motion.ClearZoom();
     // World has already rendered; draw no opaque surface over it. Polling here
     // keeps camera movement available even while a sidebar card has keyboard focus.
     const auto now = SDL_GetTicks();
@@ -423,9 +451,9 @@ void RTSViewport::OnDraw(float /*alpha*/)
     _lastFrame = now;
     const float dx = float(_keys[7] || _keys[1]) - float(_keys[5] || _keys[0]);
     const float dy = float(_keys[4] || _keys[2]) - float(_keys[6] || _keys[3]);
-    const bool home = _keys[8];
-    if (dx != 0 || dy != 0 || home)
-        CameraInput(dx * dt, dy * dt, 0, home);
+    const auto step = _motion.Advance(dx, dy, dt);
+    if (step.panX != 0 || step.panY != 0 || step.zoom != 0)
+        CameraInput(step.panX, step.panY, step.zoom, false);
 }
 
 RTSProduction::RTSProduction(ControlsContainer* parent, int idc, const ParamEntry& cls) : CStatic(parent, idc, cls)
@@ -494,7 +522,7 @@ void RTSProduction::OnDraw(float)
     if (_flashUntil > now)
     {
         const float pulse = 0.55f + 0.45f * std::sin(float(_flashUntil - now) * 0.025f);
-        const PackedColor c(Color(0.35f, 0.9f, 1, pulse));
+        const PackedColor c(Color(0.94f, 0.79f, 0.49f, pulse));
         GEngine->DrawLine(Line2DAbs(tl.x, tl.y, tl.x + width, tl.y), c, c, clip);
         GEngine->DrawLine(Line2DAbs(tl.x + width, tl.y, tl.x + width, tl.y + height), c, c, clip);
         GEngine->DrawLine(Line2DAbs(tl.x + width, tl.y + height, tl.x, tl.y + height), c, c, clip);

@@ -5,6 +5,58 @@
 #include <Poseidon/Graphics/Rendering/WholeObjectBlend.hpp>
 #include <Poseidon/Graphics/Rendering/BuildRenderPassDescriptor.hpp>
 
+TEST_CASE("RTS camera response is consistent across frame rates", "[ui][rts]")
+{
+    const auto travel = [](int fps, bool diagonal)
+    {
+        Poseidon::RTS::CameraMotion motion;
+        motion.QueueZoom(1);
+        std::array<float, 3> distance{};
+        for (int i = 0; i < fps; ++i)
+        {
+            const auto step = motion.Advance(1, diagonal ? 1 : 0, 1.0f / fps);
+            distance[0] += step.panX;
+            distance[1] += step.panY;
+            distance[2] += step.zoom;
+        }
+        return distance;
+    };
+    const auto reference = travel(60, false);
+    CHECK(reference[0] == Catch::Approx(1.0f - (1.0f - std::exp(-16.0f)) / 16.0f));
+    CHECK(reference[2] == Catch::Approx(1.0f));
+    for (int fps : {30, 144})
+    {
+        const auto other = travel(fps, false);
+        CHECK(other[0] == Catch::Approx(reference[0]).margin(0.00001f));
+        CHECK(other[2] == Catch::Approx(reference[2]).margin(0.00001f));
+    }
+    const auto diagonal = travel(60, true);
+    CHECK(std::hypot(diagonal[0], diagonal[1]) == Catch::Approx(reference[0]).margin(0.00001f));
+}
+
+TEST_CASE("RTS camera stops released axes and clears pending input", "[ui][rts]")
+{
+    Poseidon::RTS::CameraMotion motion;
+    motion.Advance(1, 1, 0.25f);
+    const auto vertical = motion.Advance(0, 1, 1.0f / 60);
+    CHECK(vertical.panX == 0);
+    CHECK(vertical.panY > 0);
+    const auto stopped = motion.Advance(0, 0, 1.0f / 60);
+    CHECK(stopped.panX == 0);
+    CHECK(stopped.panY == 0);
+    motion.QueueZoom(2);
+    CHECK(motion.Advance(0, 0, 1.0f / 60).zoom > 0);
+    motion.ClearZoom();
+    CHECK(motion.Advance(0, 0, 1.0f / 60).zoom == 0);
+    motion.Advance(1, 0, 0.5f);
+    motion.QueueZoom(-1);
+    motion.Reset();
+    const auto reset = motion.Advance(0, 0, 1.0f / 60);
+    CHECK(reset.panX == 0);
+    CHECK(reset.zoom == 0);
+    CHECK(motion.Advance(-1, 0, 1.0f / 60).panX < 0);
+}
+
 TEST_CASE("RTS ray inverts perspective at center and corners", "[ui][rts]")
 {
     const auto center = Poseidon::RTS::ViewRay(640, 360, 640, 360, 640, 360, 0.8f, 0.45f);

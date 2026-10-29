@@ -2,11 +2,13 @@
 // Indices: 0 credits,1 HQ,2 barracks,3 production deadline (-1 inactive),4 FIFO deadlines,
 // 5 soldiers,6 selection,7 mode(0 select/1 place/2 select/3 move),8 camera,
 // 9 status,10 running,11 action ID,12 focus,13 altitude,14 tab,15 move target,
-// 16 selected group,17 placement feedback [position,valid],18 paid building READY.
+// 16 selected group,17 placement feedback [position,valid],18 paid building READY,19 camera reset epoch.
 // Use ordinary conditional expressions: legacy exitWith leaks EvalBreak through
 // call boundaries in this engine; command functions must return a regular bool.
 CWR_RTS=[];
 CWR_Config=[1000,15,100,5,150,5];
+// FR-029: altitude, FOV, minimum/maximum zoom, pan speed per altitude.
+CWR_CameraConfig=[55,0.58,30,150,0.65];
 CWR_Distance={private ["_a","_b"]; _a=_this select 0; _b=_this select 1; sqrt (((_a select 0)-(_b select 0))^2+((_a select 1)-(_b select 1))^2)};
 CWR_Status={CWR_RTS set [9,_this]; false};
 CWR_Clear={
@@ -34,11 +36,11 @@ CWR_Start={
     if (isNull _hq) then {hint "C&W: HQ class MASH unavailable"; false} else {
         player allowDamage false; removeAllWeapons player; player hideObject true;
         _cam="camera" camCreate [6519.04,6390,70]; _cam cameraEffect ["internal","back"];
-        _cam camSetFov 0.8; showCinemaBorder false;
-        CWR_RTS=[3000,_hq,objNull,-1,[],[],objNull,0,_cam,"Order barracks. Place when READY.",true,-1,+_p,70,0,[],[],[],false];
+        _cam camSetFov (CWR_CameraConfig select 1); showCinemaBorder false;
+        CWR_RTS=[3000,_hq,objNull,-1,[],[],objNull,0,_cam,"Order barracks. Place when READY.",true,-1,+_p,CWR_CameraConfig select 0,0,[],[],[],false,0];
         createMarker ["CWR_HQ",_p]; "CWR_HQ" setMarkerType "Flag"; "CWR_HQ" setMarkerText "C&W HQ";
         CWR_RTS set [11,player addAction ["C&W: Command base","command.sqs"]];
-        call CWR_UpdateCamera; call CWR_Command; true
+        call CWR_UpdateCamera; call CWR_Command; call CWR_Tick; true
     }
 };
 CWR_Build={
@@ -159,25 +161,16 @@ CWR_WorldClick={
 CWR_CameraInput={
     private ["_f","_alt","_max"];
     _f=+(CWR_RTS select 12); _alt=CWR_RTS select 13; _max=worldSize;
-    if (_home) then {_f=getPos (CWR_RTS select 1); _alt=70};
-    _f set [0,(_f select 0)+_panX*100]; _f set [1,(_f select 1)+_panY*100];
+    if (_home) then {_f=getPos (CWR_RTS select 1); _alt=CWR_CameraConfig select 0; CWR_RTS set [19,(CWR_RTS select 19)+1]};
+    _f set [0,(_f select 0)+_panX*_alt*(CWR_CameraConfig select 4)]; _f set [1,(_f select 1)+_panY*_alt*(CWR_CameraConfig select 4)];
     if ((_f select 0)<0) then {_f set [0,0]}; if ((_f select 0)>_max) then {_f set [0,_max]};
     if ((_f select 1)<0) then {_f set [1,0]}; if ((_f select 1)>_max) then {_f set [1,_max]};
-    _alt=_alt-_zoom*10; if (_alt<30) then {_alt=30}; if (_alt>200) then {_alt=200};
+    _alt=_alt*(0.90^_zoom); if (_alt<(CWR_CameraConfig select 2)) then {_alt=CWR_CameraConfig select 2}; if (_alt>(CWR_CameraConfig select 3)) then {_alt=CWR_CameraConfig select 3};
     CWR_RTS set [12,_f]; CWR_RTS set [13,_alt]; call CWR_UpdateCamera
 };
-CWR_Home={CWR_RTS set [12,getPos (CWR_RTS select 1)]; CWR_RTS set [13,70]; call CWR_UpdateCamera};
+CWR_Home={CWR_RTS set [19,(CWR_RTS select 19)+1]; CWR_RTS set [12,getPos (CWR_RTS select 1)]; CWR_RTS set [13,CWR_CameraConfig select 0]; call CWR_UpdateCamera};
 CWR_TabBuild={CWR_RTS set [14,0]; true};
 CWR_TabInfantry={CWR_RTS set [14,1]; true};
-CWR_Progress={
-    private ["_fraction","_label"];
-    _fraction=1-(_this select 0)/(_this select 1); _label="[.....]";
-    if (_fraction>=0.2) then {_label="[|....]"};
-    if (_fraction>=0.4) then {_label="[||...]"};
-    if (_fraction>=0.6) then {_label="[|||..]"};
-    if (_fraction>=0.8) then {_label="[||||.]"};
-    if (_fraction>=1) then {_label="[|||||]"}; _label
-};
 CWR_SelectionPosition={private ["_positions"]; _positions=[]; {if (alive _x) then {_positions set [count _positions,getPos _x]}} forEach (CWR_RTS select 16); _positions};
 CWR_BuildCardState={
     private ["_p","_n"]; _p=1; _n=0;
@@ -191,7 +184,7 @@ CWR_TrainCardState={
     [_p,count _q,_ready]
 };
 CWR_Tick={
-    private ["_b","_q","_p","_g","_u","_rest","_remaining","_i","_training","_buildView","_trainView"];
+    private ["_b","_q","_p","_g","_u","_rest","_i"];
     _b=CWR_RTS select 2; _q=CWR_RTS select 4;
     if (((CWR_RTS select 3)>=0) && (time>=(CWR_RTS select 3))) then {
         CWR_RTS set [3,-1]; CWR_RTS set [18,true]; CWR_RTS set [9,"Barracks READY. Click its card to place."];
@@ -221,20 +214,31 @@ CWR_Tick={
         };
     };
     if (dialog) then {
-        ctrlSetText [7302,format ["CREDITS %1",CWR_RTS select 0]];
-        _remaining=0; if ((CWR_RTS select 3)>=0) then {_remaining=(CWR_RTS select 3)-time};
-        _training=0; _q=CWR_RTS select 4; if ((count _q)>0) then {_training=(_q select 0)-time};
-        _buildView="--"; _trainView="--";
-        if (CWR_RTS select 18) then {_buildView="READY - PLACE"};
-        if (!(isNull (CWR_RTS select 2))) then {_buildView="DEPLOYED"};
-        if ((CWR_RTS select 3)>=0) then {_buildView=[_remaining,CWR_Config select 1] call CWR_Progress};
+        ctrlSetText [7302,format ["%1",CWR_RTS select 0]];
         ctrlSetText [7330,"BARRACKS / 1000"];
         if ((CWR_RTS select 3)>=0) then {ctrlSetText [7330,"BARRACKS / BUILDING"]};
         if (CWR_RTS select 18) then {ctrlSetText [7330,"BARRACKS / READY"]};
         if (!(isNull (CWR_RTS select 2))) then {ctrlSetText [7330,"BARRACKS / DEPLOYED"]};
-        if ((count _q)>0) then {_trainView=[_training,CWR_Config select 3] call CWR_Progress};
-        ctrlSetText [7303,format ["%1\nBUILD %2 | TRAIN %3 | UNITS %4",CWR_RTS select 9,_buildView,_trainView,count (CWR_RTS select 5)]];
-        ctrlSetText [7305,format ["PRODUCTION  %1 / 5",count (CWR_RTS select 4)]];
+        ctrlSetText [7303,CWR_RTS select 9];
+        ctrlSetText [7364,"BASE COMMAND"];
+        if ((count (CWR_RTS select 16))>0) then {ctrlSetText [7364,format ["SELECTED / %1 INFANTRY",count (CWR_RTS select 16)]]};
+        if ((CWR_RTS select 7)==1) then {ctrlSetText [7364,"PLACE STRUCTURE"]};
+        ctrlSetText [7365,"Select / drag     Move / ground click     Pan / WASD     Zoom / wheel"];
+        if ((CWR_RTS select 7)==1) then {ctrlSetText [7365,"Place / left click     Keep ready / right click     Pan / WASD     Zoom / wheel"]};
+        ctrlShow [7360,(CWR_RTS select 14)==0]; ctrlShow [7361,(CWR_RTS select 14)==1];
+        if ((CWR_RTS select 14)==0) then {
+            ctrlSetText [7362,"BARRACKS"];
+            ctrlSetText [7363,format ["%1 credits\n%2 seconds\n\nInfantry facility",CWR_Config select 0,CWR_Config select 1]];
+            if ((CWR_RTS select 3)>=0) then {ctrlSetText [7363,"Production underway.\n\nPlace when READY."]};
+            if (CWR_RTS select 18) then {ctrlSetText [7363,"Ready to deploy.\n\nClick the portrait to choose a site."]};
+            if (!(isNull (CWR_RTS select 2))) then {ctrlSetText [7363,"Facility deployed.\n\nRecruit from the infantry tab."]};
+        } else {
+            ctrlSetText [7362,"RIFLEMAN"];
+            ctrlSetText [7363,format ["%1 credits\n%2 seconds\n\nGround infantry",CWR_Config select 2,CWR_Config select 3]];
+            if (isNull (CWR_RTS select 2)) then {ctrlSetText [7363,"Requires deployed barracks.\n\nBuild your first facility."]};
+        };
+        ctrlShow [7366,((CWR_RTS select 14)==1) && (isNull (CWR_RTS select 2))];
+        ctrlSetText [7305,format ["FORCES %1  /  QUEUE %2",count (CWR_RTS select 5),count (CWR_RTS select 4)]];
         ctrlShow [7310,(CWR_RTS select 14)==0]; ctrlShow [7311,(CWR_RTS select 14)==1];
         ctrlShow [7350,(CWR_RTS select 14)==0]; ctrlShow [7351,(CWR_RTS select 14)==1];
         ctrlShow [7340,(CWR_RTS select 14)==0]; ctrlShow [7341,(CWR_RTS select 14)==1];

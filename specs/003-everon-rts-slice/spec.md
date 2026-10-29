@@ -84,10 +84,10 @@
 
 ## Owner correction — 2026-10-27
 
-The owner rejected the command map as the main screen after seeing it in-game. This supersedes the earlier tactical-map assumption and US1 map acceptance: the main play area MUST show the actual 3D Everon world continuously with an elevated oblique RTS camera. Commands place/select/move directly by clicking that world. The right sidebar MUST follow the supplied reference composition: small minimap at top, credits and category tabs, two-column production cards with empty slots and progress. Art is original C&W, not copied reference pixels. No map/overview mode switching is required. Camera pan and zoom must stay available while the sidebar is open.
+The owner rejected the command map as the main screen after seeing it in-game. This supersedes the earlier tactical-map assumption and US1 map acceptance: the main play area MUST show the actual 3D Everon world continuously with an elevated oblique RTS camera. Commands place/select/move directly by clicking that world. The right sidebar MUST follow the supplied reference composition: small minimap at top, credits and category tabs, a two-column production area with portrait, contextual requirements and progress (the presentation pass replaces former placeholder slots). Art is original C&W, not copied reference pixels. No map/overview mode switching is required. Camera pan and zoom must stay available while the sidebar is open.
 
 - **FR-009**: Native 3D command viewport projects clicks through the current camera onto Everon terrain; sidebar/minimap clicks never issue world orders. Left click selects/places; right click moves/cancels. Arrow/WASD pan, wheel zoom, home returns HQ.
-- **FR-010**: Sidebar includes minimap, credits, build/infantry tabs, two-column cards, build/training progress, selection feedback; remains visible over the world at 720p and 1080p.
+- **FR-010**: Sidebar includes minimap, credits, build/infantry tabs, a two-column production area (portrait and contextual requirements), build/training progress, selection feedback; remains visible over the world at 720p and 1080p.
 - **SC-005**: Runtime screenshot shows 3D terrain/base and the sidebar simultaneously; actual world clicks build barracks/select a soldier/order movement and sidebar clicks do not debit or move unless intended.
 
 ## Corrections from Windows review — 2026-10-27
@@ -134,3 +134,12 @@ FR-023 supersedes the earlier place-then-build order throughout US2/edge cases a
 - **FR-027**: The RTS world fills the available play area without cinematic black borders from startup onward; menu launch, direct launch, restart, pan/zoom and viewport picking remain consistent at720p/1080p. Ordinary cutscenes retain their cinematic borders.
 - **FR-028**: MENU ends the slice through an available game command and returns to the main menu, with no script error or process abort.
 - **SC-012**: Native screenshots show terrain reaching the left/top/bottom of the play area, and automatic tests verify disabled cinematic border and menu→slice→menu.
+
+## Presentation polish — 2026-10-29
+
+Owner requests a coherent player-facing presentation rather than prototype UI.
+- **FR-029**: RTS camera starts close enough to read HQ/infantry, uses a deliberate elevated oblique angle, smoothly pans/zooms without key-release drift, preserves terrain picking, group selection, preview alignment and borderless startup. Home restores the designed view.
+- **FR-030**: Sidebar, main menu and startup share one restrained military visual language, consistent spacing, clear title/body/numeric font hierarchy and original art. Replace large placeholder grid blocks and debug-like command/status lines with useful contextual information; retain minimap, credits, categories, production progress, costs, selection information and working navigation.
+- **FR-031**: New original background/card raster assets are generated through imagegen, saved with reproducible prompt/provenance and runtime conversions; actual text remains native and sharp. Respect third-party notices and existing font licenses/mappings.
+- **FR-032**: UI distinguishes idle, producing, READY, placement, deployed, locked infantry and selection with readable text/contrast, active-category state and contextual help. No fake features or decorative controls presented as usable. Normal/hover/disabled states are coherent.
+- **SC-013**: Native Windows screenshots of menu, startup, empty base, production, READY, placement and selected infantry at720p/1080p show no clipped labels, overlapping controls, giant placeholder cells or cinematic borders. Camera and native input regression pass at both sizes. This is visual polish of the first slice, not a claim of finished combat/economy or modernized terrain assets.

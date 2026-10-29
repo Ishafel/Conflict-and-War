@@ -12,6 +12,8 @@ class RTSViewport final : public CStatic
 {
     RString _click;
     RString _cameraInput;
+    RString _cameraResetToken;
+    std::optional<float> _lastCameraResetToken;
     RString _selection;
     RString _units, _boxSelect, _placementActive, _placementValid, _placementClass, _previewClear;
     Ref<Poseidon::Object> _previewCandidate;
@@ -20,6 +22,7 @@ class RTSViewport final : public CStatic
     float _downX = 0, _downY = 0, _pointerX = 0, _pointerY = 0;
     std::uint64_t _lastFrame = 0;
     std::array<bool, 9> _keys{};
+    Poseidon::RTS::CameraMotion _motion;
 
     void Click(float x, float y, int button);
     void CameraInput(float panX, float panY, float zoom, bool home);
@@ -43,7 +46,7 @@ class RTSViewport final : public CStatic
     }
     void OnMouseMove(float x, float y, bool active = true) override;
     void OnMouseHold(float x, float y, bool active = true) override { OnMouseMove(x, y, active); }
-    void OnMouseZChanged(float dz) override { CameraInput(0, 0, dz, false); }
+    void OnMouseZChanged(float dz) override { _motion.QueueZoom(dz); }
     bool OnKeyDown(unsigned key, unsigned repeat, unsigned flags) override;
     bool OnKeyUp(unsigned key, unsigned repeat, unsigned flags) override;
     void OnDraw(float alpha) override;

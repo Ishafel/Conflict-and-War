@@ -7,6 +7,77 @@
 
 namespace Poseidon::RTS
 {
+// FR-029: integrate the response over a frame rather than sampling its final
+// velocity. The travelled distance is independent of the rendering frame rate.
+struct CameraMotionStep
+{
+    float panX = 0, panY = 0, zoom = 0;
+};
+
+class CameraMotion
+{
+    std::array<float, 2> _velocity{};
+    float _zoom = 0;
+
+  public:
+    void Reset()
+    {
+        _velocity = {};
+        _zoom = 0;
+    }
+    void ClearZoom() { _zoom = 0; }
+    void QueueZoom(float amount)
+    {
+        if (std::isfinite(amount))
+            _zoom += amount;
+    }
+
+    CameraMotionStep Advance(float x, float y, float seconds)
+    {
+        if (!std::isfinite(seconds) || seconds <= 0)
+            return {};
+        const float length = std::hypot(x, y);
+        if (length > 1)
+        {
+            x /= length;
+            y /= length;
+        }
+        constexpr float response = 16.0f;
+        const float decay = std::exp(-response * seconds);
+        const auto integrate = [&](float target, float& velocity)
+        {
+            // No coasting on released axes, including after diagonal movement.
+            if (target == 0)
+            {
+                velocity = 0;
+                return 0.0f;
+            }
+            if (target * velocity < 0)
+                velocity = 0;
+            const float distance = target * seconds + (velocity - target) * (1 - decay) / response;
+            velocity = target + (velocity - target) * decay;
+            return distance;
+        };
+        CameraMotionStep step;
+        step.panX = integrate(x, _velocity[0]);
+        step.panY = integrate(y, _velocity[1]);
+        // A wheel pulse settles quickly while preserving its full wheel-unit
+        // amount. A small final remainder is consumed, never silently dropped.
+        const float remaining = _zoom * std::exp(-18.0f * seconds);
+        if (std::abs(remaining) < 0.001f)
+        {
+            step.zoom = _zoom;
+            _zoom = 0;
+        }
+        else
+        {
+            step.zoom = _zoom - remaining;
+            _zoom = remaining;
+        }
+        return step;
+    }
+};
+
 struct ScreenRect
 {
     float left, top, right, bottom;

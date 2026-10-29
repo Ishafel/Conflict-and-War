@@ -117,6 +117,7 @@ protected:
 	SoundPars _escapeSound;
 
 	bool _state;
+	bool _flatStyle = false;
 
 	RString _action;
 
@@ -151,7 +152,7 @@ public:
 	bool CanBeDefault() const override {return true;}
 
 protected:
-	void InitColors();
+	void InitColors(const ParamEntry &cls);
 };
 
 class CActiveText : public Control

@@ -123,3 +123,14 @@ Dependencies: T048/T049/T050/T051 → T052 → T053. Crash-handler research is d
 - [x] T056 Native build/targeted gameplay, inspect720p/1080p first frames, update verification.md, commit/push existing develop PR and reopen client — FR-027/028, SC-012.
 
 Dependencies T054/T055→T056.
+
+## Phase 15: Player-facing presentation
+
+- [x] T057 [US1] Research and implement tighter deliberate camera and smooth input in RTSViewport/session.sqf with projection/input checks — FR-029, SC-013.
+- [x] T058 [US3] Generate original menu/portrait art, save PNG/PAA and prompts/provenance in content/cw/ui/ARTWORK.md — FR-031, SC-013.
+- [x] T059 [US3] Recompose resources.cpp menu/startup/sidebar, font hierarchy, graphite/brass palette and useful context replacing placeholder tiles — FR-030/032, SC-013.
+- [x] T060 [US2] Integrate readable category/order/selection states and contextual help in session.sqf, retaining native IDs/economy and deadline authority — FR-032, SC-013.
+- [x] T061 [US3] Native build, targeted units and complete gameplay regression; review screenshots at720p/1080p, iterate visual defects and record evidence in verification.md — FR-029–032, SC-013.
+- [x] T062 Reconcile contracts/docs and converge, commit/push existing develop PR, inspect CI availability and leave polished client open — FR-008/029–032.
+
+Dependencies: T057 research and T058 art may overlap; shared mission integration is serial. T057–060→T061→T062.

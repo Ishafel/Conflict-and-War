@@ -1,5 +1,5 @@
 // FR-009: native keyboard and wheel events, while sidebar owns focus.
-triSimUntil { (count CWR_RTS)==19 }
+triSimUntil { (count CWR_RTS)==20 }
 triSimUntil { dialog }
 triAssertEq [triGetCinemaBorder,false]
 triClick 7321
@@ -21,5 +21,16 @@ triAssertLt [CWR_RTS select 13,_alt]
 triClick 7315
 triSimFrames 5
 triAssertEq [((CWR_RTS select 12) select 0),((getPos (CWR_RTS select 1)) select 0)]
-triAssertEq [CWR_RTS select 13,70]
+triAssertEq [CWR_RTS select 13,55]
+// Home must clear the remaining smooth wheel impulse and stay still.
+triSimFrames 15
+triAssertEq [CWR_RTS select 13,55]
+triCursorMoveControl 7301
+triCursorScroll 4
+triSimFrames 2
+triKeyDown 74
+triSimFrames 2
+triKeyUp 74
+triSimFrames 15
+triAssertEq [CWR_RTS select 13,55]
 triEndTest

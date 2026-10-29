@@ -1536,9 +1536,9 @@ bool GameApplication::InitializeGameContent()
         LOG_ERROR(Core, "C&W resources could not be loaded: {}", resource);
         return false;
     }
-    for (const auto& [className, fileName] : {std::pair{"CWR_Background", "menu.paa"},
-                                            std::pair{"CWR_BarracksArt", "barracks.paa"},
-                                            std::pair{"CWR_InfantryArt", "infantry.paa"}})
+    for (const auto& [className, fileName] : {std::pair{"CWR_Background", "menu-v2.paa"},
+                                            std::pair{"CWR_BarracksArt", "barracks-v2.paa"},
+                                            std::pair{"CWR_InfantryArt", "infantry-v2.paa"}})
     {
         auto* imageClass = extra.FindEntry(className);
         const auto texture = content / "ui" / fileName;

@@ -7,6 +7,8 @@ Native callbacks: selectableUnits returns owned live objects; selectionPositions
 The compatible native property name remains selectionPosition; its expression now returns an array of positions for the selected group. onPreviewHidden clears [17]. The ghost's alpha is 0.28 and red/green color is driven by the validator. Native transparency preserves per-object alpha through both hardware and software material-section setup; shared model resources are unchanged.
 
 ## Production-before-placement correction (FR-023–025)
-7310 idle starts paid timer; producing rejects repeat; READY activates ghost; cancel preserves READY; deployment consumes it and enables 7311 immediately. Progress[2] means awaiting placement for building card. Session length19, ready at18. Observer isObjectHidden=true throughout RTS and false after Clear. Unscheduled mission init establishes camera before rendered gameplay.
+7310 idle starts paid timer; producing rejects repeat; READY activates ghost; cancel preserves READY; deployment consumes it and enables 7311 immediately. Progress[2] means awaiting placement for building card. Session length20, ready at18, camera reset epoch at19. Observer isObjectHidden=true throughout RTS and false after Clear. Unscheduled mission init establishes camera before rendered gameplay.
 
 FR-027/028: no cinematic border around RTS world. MENU7316 clears session and uses endMission plus forceEnd; menu test must reach display0 again.
+
+Presentation pass retains7300/7301 and existing control IDs.76% world/24% panel; text uses distinct existing title/body/mono families. Operation and selection context occupy lower panel instead of empty slot grid; native progress overlays still derive state from callbacks. Header/help no longer look like console instructions. Category active state and locked infantry explanation must be visible.

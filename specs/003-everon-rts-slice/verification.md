@@ -158,3 +158,26 @@ Windows native build PASS20261029-221937; final staging PASS build/rts-border-st
 - Screenshot build/rts-border720/feedback/000_first_rts_view.png inspected: terrain reaches play-area edges with sidebar unchanged, observer hidden.
 
 Final1080 feedback/camera/interface3/3 PASS73.1s, build/rts-border1080. First gameplay-frame720p/1080p captured with --screenshot-delay1 and inspected: full terrain up to the play-area edges, no cinematic mask. No further economic/input changes after these tests. Converge: FR-027/028 satisfied on native Windows; existing macOS runtime follow-up remains.
+
+## Player-facing presentation pass — 2026-10-29 (FR-029–032, SC-013)
+
+Spec Kit existing feature extended through spec/plan/tasks before behavior; prerequisites resolve003, quality checklist5/5 PASS, extension hooks absent. Analyze maps FR-029→T057/T061, FR-030→T059/T061, FR-031→T058/T061, FR-032→T059/T060/T061 and all→T062. Camera and visual research consolidated in plan/research. Stack, licensing, compatibility names and external game-data policy remain intact.
+
+Presentation: existing licensed title/body/mono font families now have separate roles. Native sidebar is76%/24% with coherent graphite/brass palette, larger portrait, active categories, locked infantry, contextual requirements/selection/status and useful lower panel instead of8 black placeholders. Main menu/startup use original generated island art. Assets menu-v2/barracks-v2/infantry-v2 PNG/PAA and complete built-in imagegen prompts in content/cw/ui/ARTWORK.md; runtime conversion PoseidonTools image convert --format DXT1. No C&C/game assets copied into source or CI.
+
+Visual iteration: initial cwrTitle/cwrMono labels were too condensed/small; reserve display face for large branding and mono for amounts. CStatic multi-line copy used to show focus rectangles: opt-in ST_NO_RECT removes them. Existing CButton ignored local palettes and used shared wrapper colours; explicit flatStyle uses local palette/hover/focus/disabled state, with legacy branch preserved. Native settings/menu round trip verifies old controls remain functional. No global font tuning or theme mutation.
+
+Camera:55m/0.58 FOV,30–150m zoom, height-scaled speed, exponential integrated acceleration and wheel response, normalized diagonal movement and exact axis stop.8 RTS unit cases/52assertions PASS on final build, including30/60/144FPS travel and reset. CI CTest regex includes the two new camera cases.
+
+Native Windows evidence:
+- C++ full build PASS20261029-224111; flat-button refinement full build PASS20261029-224808; final camera reset build PASS20261029-225855.
+- Initial presentation7201/1 PASS3.3s after correcting test expectation for triGetControlVisible's scalar0 (not a GameBool). Initial menu/feedback2/2 PASS46.7s.
+- First ten-case development suite9PASS/1FAIL190.6s: Home expected55 but remaining wheel tail reached54.4922. Pointer-leave reset alone does not cover programmatic/keyboard activation of CENTER HQ. Added explicit state[19] reset epoch and cameraResetToken callback, resetting before input consumption; state has20 fields. No loosened assertion, retry or skip.
+- Final stable720 complete suite10/10 PASS182.4s, build/rts-polish-stable720. Runtime source was stable throughout this final run.
+- Final1080 menu/presentation/feedback/camera4/4 PASS52.8s, build/rts-polish-final1080. After720 suite only capture framing/wait changed for the in-engine startup-resource preview and developed-base overview; gameplay assertions retained. Native screenshots of empty base, production, READY, green/red ghost, near/far selection, rectangle/groups, locked/available infantry, menu and startup preview inspected.
+- Final RTS unit8/8,52assertions PASS; git diff --check PASS.
+
+Prior commit3397a4e Windows push and PR CI both SUCCESS when inspected; macOS jobs still running. These are prior native build results, not proof of the unpushed presentation changes or macOS gameplay. Current macOS gameplay remains T016/T027.
+Converge: presentation requirements implemented and verified on Windows; no new unbuilt runtime work found. Existing macOS gameplay/evaluator follow-ups remain explicit.
+
+Final startup-resource preview7201/1 PASS4.2s after waiting for fade-in; native720/1080 images inspected at full opacity. FR-010 wording reconciled with FR-030 presentation pass (portrait plus contextual information replaces placeholder card grid). No runtime changes after stable720/1080 checks.

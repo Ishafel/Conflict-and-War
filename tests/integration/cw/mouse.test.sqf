@@ -1,5 +1,5 @@
 // FR-013/SC-006: cursor/button state, normal UI hit testing (no direct control click).
-triSimUntil { (count CWR_RTS)==19 }
+triSimUntil { (count CWR_RTS)==20 }
 call CWR_Build
 triSimUntil { CWR_RTS select 18 }
 triSimUntil { dialog }
