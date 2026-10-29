@@ -2,4 +2,4 @@ tags = ["cw", "rts", "full_game", "headful"]
 binary = "PoseidonGame"
 mission = "content/cw/Missions/CWEveron.eden"
 timeout = 90
-assert_timeout = 10
+assert_timeout = 25

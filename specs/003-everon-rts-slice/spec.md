@@ -24,7 +24,7 @@
 **Why this priority**: Доказывает основной цикл RTS.
 **Independent Test**: На чистом старте построить казарму и произвести двух солдат, проверить стоимость, задержку и повторный заказ.
 **Acceptance Scenarios**:
-1. **Given** достаточно кредитов, **When** выбрано допустимое место, **Then** стоимость списана один раз и площадка/здание появляется в мире и становится доступным для найма после времени строительства.
+1. **Given** достаточно кредитов, **When** заказана казарма, **Then** списывается 1000 и идёт 15 с производства без здания в мире; READY позволяет выбрать место, после размещения найм доступен сразу.
 2. **Given** готовая казарма, **When** заказана пехота, **Then** очередь обрабатывается последовательно и солдат появляется у казармы.
 3. **Given** выбран солдат, **When** задана точка движения, **Then** он получает приказ перемещения.
 
@@ -54,7 +54,7 @@
 - **FR-002**: Загружать Everon из внешней установки; исходники миссии и собственные ресурсы хранить в репозитории.
 - **FR-003**: Создать штаб и стартовый баланс 3000 кредитов; камера командира над настоящим 3D-миром без управления от первого лица; карта только в миникарте.
 - **FR-004**: Постоянная правая панель: кредиты, казарма (1000 / 15 с), солдат (100 / 5 с), очередь максимум 5, статус, возврат камеры к штабу, выход.
-- **FR-005**: Размещение одной казармы в пределах 150 м от штаба с проверкой воды и пересечения строений; отмена без списания.
+- **FR-005**: Заказ одной казармы списывает 1000 кредитов и запускает 15 с производства в панели. Готовое здание размещается в пределах 150 м от штаба с проверкой воды и пересечения строений; отмена размещения сохраняет оплаченный готовый заказ.
 - **FR-006**: Солдат появляется у готовой казармы, доступен выбор и приказ движения. Отказы не меняют баланс. Уничтожение казармы отменяет очередь с возвратом.
 - **FR-007**: Собственное главное меню и заставка C&W, оригинальный сгенерированный фон с сохранённым промптом и происхождением; сохранить обязательные уведомления.
 - **FR-008**: Автоматические проверки экономики, очереди, размещения и повторного запуска плюс игровой прогон и снимки; результаты связывать с FR. Нативную готовность macOS не заявлять без прогонов.
@@ -70,7 +70,7 @@
 ### Measurable Outcomes
 
 - **SC-001**: На Everon игрок за 2 минуты запускает базу, строит казарму, нанимает двух солдат и отдаёт приказ движения.
-- **SC-002**: После казармы и двух солдат остаётся 1800 кредитов; отменённые и отвергнутые команды не расходуют кредиты.
+- **SC-002**: После казармы и двух солдат остаётся 1800 кредитов; повторные/отвергнутые команды не расходуют кредиты, отмена размещения сохраняет готовое здание без повторной оплаты.
 - **SC-003**: Панель читается и не перекрывает основную командную область при 720p и 1080p.
 - **SC-004**: Есть воспроизводимый локальный запуск без копирования сторонних игровых данных в Git и честный отчёт проверок.
 
@@ -117,3 +117,14 @@ The owner rejected the command map as the main screen after seeing it in-game. T
 - **FR-021**: Production cards animate an original clockwise reveal of their image, show queued count and completion feedback. Progress follows authoritative build/training deadlines; queued next orders restart the sweep and invalid commands do not start one. No copied Red Alert assets.
 - **FR-022**: Remove the inactive HQ ONLINE placeholder from the production grid. Keep clearly labelled camera return to HQ; no decorative element should imply an unavailable action.
 - **SC-009**: Native input and screenshots at 720p/1080p prove green/red preview without debit, rejection of red placement, exact model clicks at more than one zoom, drag selection of two units, actual group movement and sidebar isolation. Screenshots at different production times show the clockwise reveal progressing and restarting for the next order.
+
+## Owner corrections — 2026-10-29
+
+- **FR-023**: Barracks follows idle → paid production (15 s) → READY → placement preview → deployed. Production creates no world building. Click READY to choose a site; early/repeated clicks do not restart or debit. Invalid sites and right-click cancellation retain READY. Deployment is immediate, charges nothing further, and enables infantry.
+- **FR-024**: The required engine player is invisible during the RTS session, with no visible body or shadow; produced infantry remain visible/selectable. Restart and mission exit restore ordinary player visibility.
+- **FR-025**: Mission startup establishes the commander camera before the first playable frame, without a first-person flash or arbitrary delay. Both direct launch and main-menu launch use this path; startup failure reports the error.
+- **FR-026**: Repair observed CI failures without removing tests: Unix process lifecycle checks work on macOS and Linux, and Windows crash dumps retain the original exception context. Record native outcomes separately per platform.
+- **SC-010**: Native pointer regression proves full price/timer/READY/preview/cancel/deploy flow, no building before deployment, immediate recruitment after deployment, hidden observer and direct/menu startup; inspect initial frames at 720p and 1080p.
+- **SC-011**: Native Windows crash regression and Rust workspace pass; subsequent native macOS CI determines Unix lifecycle results. Do not claim macOS gameplay verified from CI compilation.
+
+FR-023 supersedes the earlier place-then-build order throughout US2/edge cases and the interactive feedback acceptance. Cancellation means canceling the placement cursor, not refunding or destroying an order.

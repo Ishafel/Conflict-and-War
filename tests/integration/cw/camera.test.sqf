@@ -1,5 +1,5 @@
 // FR-009: native keyboard and wheel events, while sidebar owns focus.
-triSimUntil { (count CWR_RTS)==18 }
+triSimUntil { (count CWR_RTS)==19 }
 triSimUntil { dialog }
 triClick 7321
 _focus=+(CWR_RTS select 12)

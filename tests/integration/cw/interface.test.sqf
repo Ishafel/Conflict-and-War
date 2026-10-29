@@ -1,5 +1,5 @@
 // FR-009/010 and SC-005: real viewport input, minimap isolation and 3D production.
-triSimUntil { (count CWR_RTS)==18 }
+triSimUntil { (count CWR_RTS)==19 }
 triSimUntil { dialog }
 triAssert [(triGetControlVisible 7301)]
 triAssert [(triGetControlVisible 7304)]
@@ -15,13 +15,15 @@ triAssertGt [((CWR_RTS select 12) select 0)-(_focus select 0),0.2]
 triClick 7315
 triSimFrames 5
 triClick 7310
+triSimUntil { CWR_RTS select 18 }
+triClick 7310
 triAssertEq [CWR_RTS select 7,1]
 triClickAt [7304,0.5,0.5]
 triAssertEq [CWR_RTS select 7,1]
-triAssertEq [CWR_RTS select 0,3000]
+triAssertEq [CWR_RTS select 0,2000]
 triClickAt [7301,0.5,0.5,1]
 triAssertEq [CWR_RTS select 7,0]
-triAssertEq [CWR_RTS select 0,3000]
+triAssertEq [CWR_RTS select 0,2000]
 // Search visible open terrain through actual native world clicks, not script placement.
 triClick 7310
 _clicked=false;

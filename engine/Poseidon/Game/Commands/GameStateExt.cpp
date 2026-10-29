@@ -481,6 +481,8 @@ GameValue GetLaserTarget(const GameState* state, GameValuePar oper1);
 GameValue GetNearestObject(const GameState* state, GameValuePar oper1);
 GameValue GetNearestObjectByDistance(const GameState* state, GameValuePar oper1);
 GameValue ObjectPlacementClear(const GameState* state, GameValuePar object);
+GameValue ObjHideObject(const GameState*, GameValuePar, GameValuePar);
+GameValue ObjIsHidden(const GameState*, GameValuePar);
 GameValue GetNetIdObj(const GameState* state, GameValuePar oper1);
 GameValue GetNetworkId(const GameState* state, GameValuePar oper1);
 GameValue GetObjFromNetId(const GameState* state, GameValuePar oper1);
@@ -1204,6 +1206,7 @@ static const GameFunction* GetExtUnary(int& count)
         GameFunction(GameScalar, "getMass", ObjGetMass, GameObject),
         GameFunction(GameObject, "NearestObjectDistance", GetNearestObjectByDistance, GameArray),
         GameFunction(GameBool, "objectPlacementClear", ObjectPlacementClear, GameObject),
+        GameFunction(GameBool, "isObjectHidden", ObjIsHidden, GameObject),
         GameFunction(GameString, "substr", StrSub, GameArray),
         GameFunction(GameScalar, "sizeofstr", StrSize, GameString),
         // todo: add more parameters and adjust parameters to make some of them has default value
@@ -1245,6 +1248,7 @@ static const GameOperator* GetExtBinary(int& count)
         GameOperator(GameNothing, "allowDammage", function, ObjAllowDammage, GameObject, GameBool),
         // Grammatically-correct one-M alias resolves to the same handler (cf. setDammage/setDamage).
         GameOperator(GameNothing, "allowDamage", function, ObjAllowDammage, GameObject, GameBool),
+        GameOperator(GameNothing, "hideObject", function, ObjHideObject, GameObject, GameBool),
         GameOperator(GameNothing, "flyInHeight", function, ObjSetFlyingHeight, GameObject, GameScalar),
         GameOperator(GameNothing, "setMarkerPos", function, MarkerSetPos, GameString, GameArray),
         GameOperator(GameNothing, "setMarkerType", function, MarkerSetType, GameString, GameString),

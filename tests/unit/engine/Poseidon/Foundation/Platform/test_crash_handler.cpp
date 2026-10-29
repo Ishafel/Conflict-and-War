@@ -15,7 +15,8 @@
 TEST_CASE("crash handler child process", "[.][platform][crash]")
 {
     Poseidon::Foundation::InstallCrashHandler(nullptr);
-    RaiseException(0xe0000001, EXCEPTION_NONCONTINUABLE, 0, nullptr);
+    const ULONG_PTR argument = 0x435752;
+    RaiseException(0xe0000001, EXCEPTION_NONCONTINUABLE, 1, &argument);
 }
 
 TEST_CASE("crash handler preserves the exception context in a minidump", "[platform][crash]")
@@ -53,6 +54,11 @@ TEST_CASE("crash handler preserves the exception context in a minidump", "[platf
     REQUIRE(MiniDumpReadDumpStream(dump.data(), ExceptionStream, &directory, reinterpret_cast<void**>(&exception),
                                    &streamSize));
     REQUIRE(exception != nullptr);
+    CHECK(exception->ThreadId == process.dwThreadId);
+    CHECK(exception->ExceptionRecord.ExceptionCode == 0xe0000001);
+    REQUIRE(exception->ExceptionRecord.NumberParameters == 1);
+    CHECK(exception->ExceptionRecord.ExceptionInformation[0] == 0x435752);
+    REQUIRE(exception->ThreadContext.DataSize >= sizeof(CONTEXT));
     REQUIRE(exception->ThreadContext.Rva + exception->ThreadContext.DataSize <= dump.size());
 
     const CONTEXT* context = reinterpret_cast<const CONTEXT*>(dump.data() + exception->ThreadContext.Rva);

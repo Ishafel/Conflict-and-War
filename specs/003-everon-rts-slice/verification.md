@@ -124,3 +124,21 @@ FR-018–022, SC-009, T042–047.
 Промежуточные визуальные замечания устранены: непрозрачный tint заменён настоящим alpha blend; land-contact offset учтён общим кодом preview/commit. Экономика и единственный scheduler сохранены; состояние расширено до 18 документированных полей. Новая функциональность проверена на Windows; native macOS build/run этого изменения и внешняя ARM capacity остаются непроверенными.
 
 Повторная сверка Spec Kit: FR-018–022/SC-009 покрыты T042–047, реализацией и проверками; новых пробелов в этой фазе нет. Открытые T016/T026–028/T040–041 относятся к ранее отмеченным платформенным/legacy работам и не выдаются за завершённые. LICENSE/CREDITS/THIRD_PARTY_NOTICES и стек сохранены.
+
+## 2026-10-29 — C&C order and startup corrections (FR-023–026)
+
+Spec Kit: existing spec/plan/tasks extended before changes; prerequisites resolve feature003; requirement checklist5/5 PASS, hooks absent. Analyze maps FR-023→T048/T052, FR-024/025→T049/T052, FR-026→T050/T051/T052, all→T053. Superseded acceptance/data-model order reconciled; no unresolved clarification or constitution conflict. Existing macOS gameplay/EvalBreak follow-ups remain explicit.
+
+Latest prior CI40766209520 (a2a51c6): all3 native C++ builds compiled. macOS Foundation497/497 passed then Rust kill_on_drop failed because Linux-only/proc check reports no process on macOS. Windows Foundation476/477 passed, strict crash minidump creation failed0x800706F8; push40766200111 Windows succeeded. T040 timing fix is verified by these subsequent native timing results; new blockers are T050/051, no matrix bypass.
+
+Native Windows new checks:
+- C++ Build PASS, build/logs/windows-win-x64-clang-rwdi-20261029-215110.log; own content restaged successfully in20261029-220201.log.
+- Foundation477/477 PASS42.23s, log20261029-215818. Strict crash context test1/1,15assertions PASS separately. An initial broad[crash] invocation also included the intentionally fatal hidden child and exited nonzero; the named parent regression and full CTest are the authoritative results.
+- RTS unit6/6,36assertions PASS. Rust workspace5+9+1+13+69+7+98=202 tests PASS, log20261029-215305. Unix-only code is not executed on Windows; native macOS result remains pending. rustfmt is not installed in the pinned local toolchain; formatting was reviewed, not reported as a tool PASS.
+- First feedback native run exited before harness due leading// unsupported by raw init.sqf Execute. Removed leading comment from expression-only init; comments remain in session/stub. Next feedback1/1 PASS33.7s, build/rts-order-feedback-fixed; screenshots show hidden observer, timer with no building, ready before preview, cancel/order retention, deployment, recruitment, exact picking, rectangle and movement.
+- Initial nine-case suite6PASS/3FAIL165.6s: menu/menu_demo loaded stale staged init.sqs plus commented init.sqf; placement test's old10s wait cannot accommodate the new15s production. Restaged current source; placement assertion budget25s accommodates the required production (no timer change, retry or skip). Subsequent native results recorded below.
+
+The Windows writer-thread change follows supported DbgHelp guidance and passes strict original-context checks locally. The CI-specific ERROR_INVALID_USER_BUFFER fix remains unconfirmed until new CI; do not treat a local PASS as proof of its remote cause. No tests are removed.
+
+Final native results: targeted final720 feedback/menu/menu_demo/placement4/4 PASS57.7s, build/rts-order-final720. Together with unchanged camera/interface/mouse/production/readiness in the initial suite, all9 current scenarios passed; this is not a claim that the initial combined run passed. Feedback1080 1/1 PASS37.0s, build/rts-order-final1080; includes READY label still present after2s and correct debit/cancel/deploy/group behavior. First gameplay frame captured using --test-type screenshot --screenshot-delay1 at720p and1080p; native image inspection shows the commander camera/sidebar, no first-person body. This is a deliberately exiting validation launch, separate from the live client reopened after publication.
+Converge: FR-023–025 implemented and Windows checks PASS; FR-026 local Windows PASS but new native macOS and CI-specific dump outcome remain to be inspected. Remaining macOS gameplay and evaluator legacy tasks already exist; no duplicate convergence tasks.

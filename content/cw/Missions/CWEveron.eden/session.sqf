@@ -1,8 +1,8 @@
-// FR-003..022. Mission-owned state. init.sqs starts exactly one tick.sqs worker.
-// Indices: 0 credits,1 HQ,2 barracks,3 build deadline (-1 ready),4 FIFO deadlines,
+// FR-003..025. Mission-owned state. init.sqf starts exactly one tick.sqs worker.
+// Indices: 0 credits,1 HQ,2 barracks,3 production deadline (-1 inactive),4 FIFO deadlines,
 // 5 soldiers,6 selection,7 mode(0 select/1 place/2 select/3 move),8 camera,
 // 9 status,10 running,11 action ID,12 focus,13 altitude,14 tab,15 move target,
-// 16 selected group,17 placement feedback [position,valid].
+// 16 selected group,17 placement feedback [position,valid],18 paid building READY.
 // Use ordinary conditional expressions: legacy exitWith leaks EvalBreak through
 // call boundaries in this engine; command functions must return a regular bool.
 CWR_RTS=[];
@@ -11,7 +11,7 @@ CWR_Distance={private ["_a","_b"]; _a=_this select 0; _b=_this select 1; sqrt ((
 CWR_Status={CWR_RTS set [9,_this]; false};
 CWR_Clear={
     if ((count CWR_RTS)>0) then {
-        CWR_RTS set [10,false]; onMapSingleClick "";
+        CWR_RTS set [10,false]; onMapSingleClick ""; player hideObject false;
         player removeAction (CWR_RTS select 11);
         if (dialog) then {closeDialog 0};
         (CWR_RTS select 8) cameraEffect ["terminate","back"];
@@ -32,10 +32,10 @@ CWR_Start={
     private ["_hq","_cam","_p"];
     call CWR_Clear; _p=[6519.04,6473.68,0]; _hq="MASH" createVehicle _p;
     if (isNull _hq) then {hint "C&W: HQ class MASH unavailable"; false} else {
-        player allowDamage false; removeAllWeapons player; player setPos [6519.04,6460,0];
+        player allowDamage false; removeAllWeapons player; player hideObject true;
         _cam="camera" camCreate [6519.04,6390,70]; _cam cameraEffect ["internal","back"];
         _cam camSetFov 0.8; showCinemaBorder false;
-        CWR_RTS=[3000,_hq,objNull,-1,[],[],objNull,0,_cam,"Headquarters online. Build barracks near HQ.",true,-1,+_p,70,0,[],[],[]];
+        CWR_RTS=[3000,_hq,objNull,-1,[],[],objNull,0,_cam,"Order barracks. Place when READY.",true,-1,+_p,70,0,[],[],[],false];
         createMarker ["CWR_HQ",_p]; "CWR_HQ" setMarkerType "Flag"; "CWR_HQ" setMarkerText "C&W HQ";
         CWR_RTS set [11,player addAction ["C&W: Command base","command.sqs"]];
         call CWR_UpdateCamera; call CWR_Command; true
@@ -43,8 +43,16 @@ CWR_Start={
 };
 CWR_Build={
     if (!(isNull (CWR_RTS select 2))) then {"One barracks per base" call CWR_Status} else {
-        if ((CWR_RTS select 0)<(CWR_Config select 0)) then {"Insufficient credits" call CWR_Status} else {
-            CWR_RTS set [7,1]; CWR_RTS set [9,"Choose an open site 22-150m from HQ. Right-click cancels."]; true
+        if ((CWR_RTS select 3)>=0) then {"Barracks production in progress" call CWR_Status} else {
+            if (CWR_RTS select 18) then {
+                CWR_RTS set [7,1]; CWR_RTS set [9,"Choose an open site 22-150m from HQ. Right-click keeps READY."]; true
+            } else {
+                if ((CWR_RTS select 0)<(CWR_Config select 0)) then {"Insufficient credits" call CWR_Status} else {
+                    CWR_RTS set [0,(CWR_RTS select 0)-(CWR_Config select 0)];
+                    CWR_RTS set [3,time+(CWR_Config select 1)]; CWR_RTS set [7,0];
+                    CWR_RTS set [9,"Barracks ordered. Wait for READY, then choose a site."]; true
+                }
+            }
         }
     }
 };
@@ -52,10 +60,10 @@ CWR_SiteErrorWithProbe={
     private ["_p","_probe","_d","_reason","_asl"];
     _p=_this select 0; _probe=_this select 1; _reason=""; _d=[_p,getPos (CWR_RTS select 1)] call CWR_Distance;
     if (!(isNull (CWR_RTS select 2))) then {_reason="Barracks already ordered"};
-    if ((CWR_RTS select 0)<(CWR_Config select 0)) then {_reason="Insufficient credits"};
+    if (!(CWR_RTS select 18)) then {_reason="Order barracks and wait for READY"};
     if ((_d>(CWR_Config select 4)) || (_d<22)) then {_reason="Site must be 22-150m from HQ"};
     if (_reason=="") then {
-        if (isNull _probe) then {_reason="Barracks model unavailable: no credits spent"} else {
+        if (isNull _probe) then {_reason="Barracks model unavailable: READY order retained"} else {
             _asl=getPosASL _probe;
             if ((_asl select 2)<1) then {_reason="Cannot build in water or at shoreline"} else {
                 if (!(objectPlacementClear _probe)) then {_reason="Site obstructed or geometry unavailable: choose an open clearing"};
@@ -82,12 +90,12 @@ CWR_Place={
     _p=_this; _reason=_p call CWR_SiteError;
     if (_reason!="") then {_reason call CWR_Status} else {
         _b="Barracks" createVehicle [_p select 0,_p select 1,0];
-        if (isNull _b) then {"Barracks model unavailable: no credits spent" call CWR_Status} else {
+        if (isNull _b) then {"Barracks model unavailable: READY order retained" call CWR_Status} else {
             _b setDir 0; _b setPos [_p select 0,_p select 1,0];
-            CWR_RTS set [2,_b]; CWR_RTS set [0,(CWR_RTS select 0)-(CWR_Config select 0)];
-            CWR_RTS set [3,time+(CWR_Config select 1)]; CWR_RTS set [17,[]]; CWR_RTS set [7,0];
+            CWR_RTS set [2,_b]; CWR_RTS set [18,false];
+            CWR_RTS set [3,-1]; CWR_RTS set [17,[]]; CWR_RTS set [7,0];
             createMarker ["CWR_Barracks",_p]; "CWR_Barracks" setMarkerType "Flag"; "CWR_Barracks" setMarkerText "C&W BARRACKS";
-            CWR_RTS set [9,"Barracks under construction"]; true
+            CWR_RTS set [9,"Barracks deployed. Recruit infantry."]; true
         }
     }
 };
@@ -172,11 +180,9 @@ CWR_Progress={
 };
 CWR_SelectionPosition={private ["_positions"]; _positions=[]; {if (alive _x) then {_positions set [count _positions,getPos _x]}} forEach (CWR_RTS select 16); _positions};
 CWR_BuildCardState={
-    private ["_p","_n","_ready"]; _p=1; _n=0; _ready=false;
-    if (!(isNull (CWR_RTS select 2))) then {
-        _ready=(CWR_RTS select 3)<0;
-        if (!_ready) then {_n=1; _p=1-((CWR_RTS select 3)-time)/(CWR_Config select 1)};
-    }; [_p,_n,_ready]
+    private ["_p","_n"]; _p=1; _n=0;
+    if ((CWR_RTS select 3)>=0) then {_n=1; _p=1-((CWR_RTS select 3)-time)/(CWR_Config select 1)};
+    [_p,_n,CWR_RTS select 18]
 };
 CWR_TrainCardState={
     private ["_p","_q","_ready"]; _p=1; _q=CWR_RTS select 4;
@@ -187,6 +193,9 @@ CWR_TrainCardState={
 CWR_Tick={
     private ["_b","_q","_p","_g","_u","_rest","_remaining","_i","_training","_buildView","_trainView"];
     _b=CWR_RTS select 2; _q=CWR_RTS select 4;
+    if (((CWR_RTS select 3)>=0) && (time>=(CWR_RTS select 3))) then {
+        CWR_RTS set [3,-1]; CWR_RTS set [18,true]; CWR_RTS set [9,"Barracks READY. Click its card to place."];
+    };
     if ((isNull _b) && ((count _q)>0)) then {
         CWR_RTS set [0,(CWR_RTS select 0)+(count _q)*(CWR_Config select 2)]; CWR_RTS set [4,[]]; CWR_RTS set [3,-1]; _q=[];
         CWR_RTS set [9,"Barracks unavailable. Training refunded."];
@@ -196,7 +205,6 @@ CWR_Tick={
             CWR_RTS set [0,(CWR_RTS select 0)+(count _q)*(CWR_Config select 2)]; CWR_RTS set [4,[]]; CWR_RTS set [2,objNull]; CWR_RTS set [3,-1];
             deleteVehicle _b; deleteMarker "CWR_Barracks"; CWR_RTS set [9,"Barracks lost. Training refunded."];
         } else {
-            if (((CWR_RTS select 3)>=0) && (time>=(CWR_RTS select 3))) then {CWR_RTS set [3,-1]; CWR_RTS set [9,"Barracks ready. Recruit infantry."]};
             if ((count _q)>0) then {
                 if (time>=(_q select 0)) then {
                     _p=getPos _b; _p set [0,(_p select 0)+25];
@@ -217,8 +225,13 @@ CWR_Tick={
         _remaining=0; if ((CWR_RTS select 3)>=0) then {_remaining=(CWR_RTS select 3)-time};
         _training=0; _q=CWR_RTS select 4; if ((count _q)>0) then {_training=(_q select 0)-time};
         _buildView="--"; _trainView="--";
-        if (!(isNull (CWR_RTS select 2))) then {_buildView="READY"};
+        if (CWR_RTS select 18) then {_buildView="READY - PLACE"};
+        if (!(isNull (CWR_RTS select 2))) then {_buildView="DEPLOYED"};
         if ((CWR_RTS select 3)>=0) then {_buildView=[_remaining,CWR_Config select 1] call CWR_Progress};
+        ctrlSetText [7330,"BARRACKS / 1000"];
+        if ((CWR_RTS select 3)>=0) then {ctrlSetText [7330,"BARRACKS / BUILDING"]};
+        if (CWR_RTS select 18) then {ctrlSetText [7330,"BARRACKS / READY"]};
+        if (!(isNull (CWR_RTS select 2))) then {ctrlSetText [7330,"BARRACKS / DEPLOYED"]};
         if ((count _q)>0) then {_trainView=[_training,CWR_Config select 3] call CWR_Progress};
         ctrlSetText [7303,format ["%1\nBUILD %2 | TRAIN %3 | UNITS %4",CWR_RTS select 9,_buildView,_trainView,count (CWR_RTS select 5)]];
         ctrlSetText [7305,format ["PRODUCTION  %1 / 5",count (CWR_RTS select 4)]];
@@ -226,7 +239,7 @@ CWR_Tick={
         ctrlShow [7350,(CWR_RTS select 14)==0]; ctrlShow [7351,(CWR_RTS select 14)==1];
         ctrlShow [7340,(CWR_RTS select 14)==0]; ctrlShow [7341,(CWR_RTS select 14)==1];
         ctrlShow [7330,(CWR_RTS select 14)==0]; ctrlShow [7331,(CWR_RTS select 14)==1];
-        ctrlEnable [7310,(isNull (CWR_RTS select 2)) && ((CWR_RTS select 0)>=(CWR_Config select 0))];
+        ctrlEnable [7310,(isNull (CWR_RTS select 2)) && ((CWR_RTS select 3)<0) && ((CWR_RTS select 18) || ((CWR_RTS select 0)>=(CWR_Config select 0)))];
         ctrlEnable [7311,(!(isNull (CWR_RTS select 2))) && ((CWR_RTS select 3)<0) && ((CWR_RTS select 0)>=(CWR_Config select 2)) && ((count (CWR_RTS select 4))<(CWR_Config select 5))];
     }; true
 };

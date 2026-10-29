@@ -1,5 +1,7 @@
 // FR-011/SC-006: rotated building edges outside the old 12m origin test.
-triSimUntil { (count CWR_RTS)==18 }
+triSimUntil { (count CWR_RTS)==19 }
+call CWR_Build
+triSimUntil { CWR_RTS select 18 }
 _site=[];
 {_dx=_x; {_p=[6519.04+_dx,6473.68+_x,0]; if ((count _site)==0) then {
     if (isNull (NearestObjectDistance [_p,"",12])) then {if ((_p call CWR_SiteError)=="") then {_site=+_p}};

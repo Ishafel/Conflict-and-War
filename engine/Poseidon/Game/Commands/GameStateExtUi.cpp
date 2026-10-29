@@ -584,6 +584,19 @@ GameValue GetNearestObjectByDistance(const GameState* state, GameValuePar oper1)
 }
 
 // FR-011: test the candidate's full geometry, not distances between object origins.
+GameValue ObjHideObject(const GameState*, GameValuePar value, GameValuePar hidden)
+{
+    if (Object* object = GetObject(value))
+        object->HideObject(hidden);
+    return NOTHING;
+}
+
+GameValue ObjIsHidden(const GameState*, GameValuePar value)
+{
+    Object* object = GetObject(value);
+    return GameValue(object && object->IsObjectHidden());
+}
+
 GameValue ObjectPlacementClear(const GameState* state, GameValuePar value)
 {
     Object* object = GetObject(value);

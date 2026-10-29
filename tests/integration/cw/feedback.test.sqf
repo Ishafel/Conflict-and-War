@@ -1,7 +1,33 @@
 // FR-018..022: actual pointer preview, production phases, exact clicks and group drag.
-triSimUntil { (count CWR_RTS)==18 }
+triSimUntil { (count CWR_RTS)==19 }
 triSimUntil { dialog }
 triAssertExcludes [triVisibleTexts,"ONLINE"]
+triAssert [isObjectHidden player]
+triScreenshot "first_rts_view"
+triClick 7310
+triSimFrames 2
+triAssertEq [CWR_RTS select 0,2000]
+triAssert [isNull (CWR_RTS select 2)]
+triAssertEq [CWR_RTS select 7,0]
+triAssertEq [count (CWR_RTS select 17),0]
+_early=(call CWR_BuildCardState) select 0
+_deadline=CWR_RTS select 3
+triScreenshot "build_clock_start"
+triClick 7310
+triAssertEq [CWR_RTS select 3,_deadline]
+triAssertEq [CWR_RTS select 0,2000]
+_wait=time+5
+triSimUntil { time>=_wait }
+triAssert [isNull (CWR_RTS select 2)]
+triAssertGt [(call CWR_BuildCardState) select 0,_early]
+triScreenshot "build_clock_middle"
+triSimUntil { CWR_RTS select 18 }
+triAssert [isNull (CWR_RTS select 2)]
+triSimFrames 2
+_wait=time+2
+triSimUntil { time>=_wait }
+triAssertEq [triControlText 7330,"BARRACKS / READY"]
+triScreenshot "build_ready"
 triClick 7310
 triCursorMove [0,0]
 triSimFrames 6
@@ -11,7 +37,7 @@ triMouseLeft 1
 triSimFrames 2
 triMouseLeft 0
 triSimFrames 2
-triAssertEq [CWR_RTS select 0,3000]
+triAssertEq [CWR_RTS select 0,2000]
 triAssert [isNull (CWR_RTS select 2)]
 _site=[];
 {_dx=_x; {_p=[6519.04+_dx,6473.68+_x,0]; if ((count _site)==0) then {if ((_p call CWR_SiteError)=="") then {_site=+_p}}} forEach [-60,-40,-20,20,40,60]} forEach [-60,-40,-20,20,40,60];
@@ -20,7 +46,7 @@ CWR_RTS set [12,[(_site select 0)-12,(_site select 1)-12,0]]
 call CWR_UpdateCamera
 triSimFrames 6
 triAssert [(CWR_RTS select 17) select 1]
-triAssertEq [CWR_RTS select 0,3000]
+triAssertEq [CWR_RTS select 0,2000]
 triScreenshot "preview_green"
 triCursorMoveControl 7321
 triSimFrames 4
@@ -35,7 +61,8 @@ triMouseRight 0
 triSimFrames 3
 triAssertEq [CWR_RTS select 7,0]
 triAssertEq [count (CWR_RTS select 17),0]
-triAssertEq [CWR_RTS select 0,3000]
+triAssertEq [CWR_RTS select 0,2000]
+triAssert [CWR_RTS select 18]
 triClick 7310
 triCursorMove [0,0]
 triSimFrames 4
@@ -48,15 +75,8 @@ triAssert [!(isNull (CWR_RTS select 2))]
 triAssertLt [[getPos (CWR_RTS select 2),_previewPosition] call CWR_Distance,0.1]
 triAssertEq [CWR_RTS select 0,2000]
 triAssertEq [count (CWR_RTS select 17),0]
-_early=(call CWR_BuildCardState) select 0
-_wait=time+5
-triScreenshot "build_clock_start"
-triSimUntil { time>=_wait }
-triAssertGt [(call CWR_BuildCardState) select 0,_early]
-triScreenshot "build_clock_middle"
-triSimUntil { (CWR_RTS select 3)<0 }
-triSimFrames 2
-triScreenshot "build_ready"
+triAssertEq [CWR_RTS select 18,false]
+triAssertEq [CWR_RTS select 3,-1]
 triClick 7321
 triSimFrames 5
 triClick 7311
@@ -74,6 +94,8 @@ triScreenshot "train_clock_next_order"
 triSimUntil { (count (CWR_RTS select 5))==2 }
 _first=(CWR_RTS select 5) select 0
 _second=(CWR_RTS select 5) select 1
+triAssertEq [isObjectHidden _first,false]
+triAssertEq [isObjectHidden _second,false]
 _p=getPos _first
 CWR_RTS set [12,[(_p select 0)-12,(_p select 1)-12,0]]
 CWR_RTS set [13,35]
@@ -125,7 +147,10 @@ triMouseLeft 0
 triSimFrames 3
 triAssertEq [CWR_RTS select 15,_target]
 triAssertEq [CWR_RTS select 0,1800]
+call CWR_Clear
+triAssertEq [isObjectHidden player,false]
 call CWR_Start
+triAssert [isObjectHidden player]
 triAssertEq [count (CWR_RTS select 16),0]
 triAssertEq [count (CWR_RTS select 17),0]
 triEndTest

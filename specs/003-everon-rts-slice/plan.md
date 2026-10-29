@@ -9,7 +9,7 @@
 
 ## Technical Context
 
-**Language/Version**: C++20/C11, существующий SQF/SQS; Rust workspace без изменений.
+**Language/Version**: C++20/C11, существующий SQF/SQS; Rust workspace (portable lifecycle regression).
 **Primary Dependencies**: существующие SDL3, OpenGL 3.3, OpenAL, ImGui, vcpkg, CMake/Ninja/Clang, Trident.
 **Storage**: состояние одиночной миссии в памяти; исходники ресурсов в `content/cw/`.
 **Testing**: Trident игровые проверки команд и UI, PoseidonTools lint, Windows native build, снимки 720p/1080p.
@@ -22,7 +22,7 @@
 ## Constitution Check
 
 До исследования: PASS — SDD, стек и совместимость сохранены, платформы проверяются отдельно, собственные ресурсы без внешних данных.
-После проектирования: PASS — контент отделён, команды и расчёты централизованы, UI не дублирует экономику, задачи имеют FR и проверки. Скрытое глобальное состояние не вводится: CWR_RTS — документированный публичный контракт с владельцем init.sqs; функции CWR_* принадлежат миссии и сбрасываются при её старте.
+После проектирования: PASS — контент отделён, команды и расчёты централизованы, UI не дублирует экономику, задачи имеют FR и проверки. Скрытое глобальное состояние не вводится: CWR_RTS — документированный публичный контракт с владельцем init.sqf; функции CWR_* принадлежат миссии и сбрасываются при её старте.
 
 ## Project Structure
 
@@ -32,7 +32,7 @@
 
 ### Source Code (repository root)
 
-- `content/cw/Missions/CWEveron.eden/`: mission.sqm, description.ext, init.sqs, session.sqf, tick.sqs.
+- `content/cw/Missions/CWEveron.eden/`: mission.sqm, description.ext, init.sqf, compatibility init.sqs stub, session.sqf, tick.sqs.
 - `content/cw/ui/`: resources.cpp, startup.sqs, generated menu background and provenance.
 - `apps/cwr/Game/GameApplication.cpp`, `CMakeLists.txt`: load/stage own resources.
 - `engine/Poseidon/UI/OptionsUIApp.cpp`: select C&W menu, retain existing dispatch and settings.
@@ -79,3 +79,10 @@ Placement uses a viewport-owned unregistered candidate for the existing objectPl
 Add CT_RTS_PRODUCTION=103, a non-interactive native card overlay. Its callback returns progress/count/ready from mission deadlines; clipped triangle sectors form a clockwise dark cover and a completion border. No UI-owned timers for economics. Remove HQ ONLINE, rename the actual home button to CENTER HQ. Use existing images, renderer, input, test stack; no generated bitmap is needed for code-native animations. Requirements/tasks and contracts updated before behavior; Constitution Check PASS. Native Windows visual/input checks are required; macOS runtime remains separate.
 
 Visual verification found that section rendering drops per-object alpha flags. Add a narrow shared whole-object blend policy for the existing IsAlphaOrdered + IsColored + IsAlpha combination: route it through the transparent object pass and retain alpha/no-depth-write overrides in hardware and software section setup. Normal mixed-material models retain their existing routing. Test this policy and descriptor output without changing shared model flags. Candidate/commit use identical PlaceOnSurface/setPos handling; preview feedback records the actual candidate model origin, including land-contact offset.
+
+## C&C production order and startup correction
+
+FR-023: preserve state[3] deadline; add state[18] paid-ready flag. No building until placement. Order debits once, Tick changes deadline to -1/ready=true without world spawn. READY click activates preview, cancel retains it; common placement validator requires READY and never rechecks already-paid credits. Deployment consumes READY immediately and enables training. Use existing card progress.
+FR-024/025: synchronous init.sqf calls existing mission callbacks before first render (remove scheduled init.sqs delay); keep one tick worker. Add local hideObject/isObjectHidden commands with per-object visibility, checked by scene submission to prevent body/shadow; hide required player during session, restore on Clear. No global renderer switch, player deletion or off-map teleport workaround.
+FR-026: Unix lifecycle test uses child try_wait plus portable ps state including zombie state, reporting query errors. Investigate Windows minidump failure preserving the strict ExceptionStream assertion; no skips/retries to hide failure.
+Constitution Check PASS: unchanged stack/dependencies/data policy, all changes linked to FR-023–026 and native regressions. Existing feature artifacts extended; no new parallel SDD structure.

@@ -93,7 +93,7 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 
 - [x] T038 Заменить абсолютные сроки пробуждения в трёх падающих potime-тестах на независимые chrono-скобки, сохранив минимальные длительности и единицы; добавить delayed workload и отрицательные показания — FR-016, SC-008.
 - [x] T039 Пересобрать FoundationTests, выполнить potime и полный Foundation на Windows, записать native Intel build PASS / 3 timing failures и ARM capacity cancellation для 35f0346 в verification.md — FR-008/016/017, SC-008.
-- [ ] T040 Сделать коммит и обновить существующий PR develop, проверить новый Intel/Windows прогон; ARM capacity не скрывать и матрицу не менять — FR-016/017, SC-008.
+- [x] T040 Сделать коммит и обновить существующий PR develop, проверить новый Intel/Windows прогон; ARM capacity не скрывать и матрицу не менять — FR-016/017, SC-008.
 - [ ] T041 Отдельно оценить аппаратно-зависимые пороги precision/performance в tests/unit/engine/Poseidon/Foundation/Framework/test_potime.cpp и перенести требования пропускной способности в воспроизводимые benchmark-проверки. Эти тесты в текущем native прогоне прошли; это legacy follow-up вне трёх воспроизведённых отказов — Constitution III.
 
 ## Phase 12: Interactive RTS feedback
@@ -104,3 +104,14 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 - [x] T045 Добавить CT_RTS_PRODUCTION с круговым reveal, счётчиком и completion feedback; убрать HQ ONLINE и уточнить CENTER HQ в resources.cpp — FR-021/022, SC-009.
 - [x] T046 Обновить contracts/data-model/quickstart и Trident сценарии: точные клики/zoom, рамка двух юнитов/движение, preview/баланс/отмена, фазы production в 720p/1080p; выполнить native build, unit и игровые проверки — FR-018–022, SC-009.
 - [x] T047 Записать доказательства и ограничения в verification.md, сверить Spec Kit, сделать коммит и обновить PR develop; оставить новую игру открытой — FR-008/018–022, SC-009.
+
+## Phase 13: Production order, clean startup and CI
+
+- [x] T048 [US2] Update paid production/READY/deployment transitions and sidebar in content/cw/Missions/CWEveron.eden/session.sqf; retain ready on cancellation/failure — FR-023, SC-010.
+- [x] T049 [US1] Add per-object hideObject/isObjectHidden in Object/GameStateExtUi/GameStateExt and scene submission; synchronous mission init.sqf initializes camera before first frame — FR-024/025, SC-010.
+- [x] T050 Fix portable Unix child lifecycle regression in engine/Trident/src/client/instance.rs, retaining running/dead and zombie discrimination — FR-026, SC-011.
+- [x] T051 Investigate and fix Windows MiniDumpWriteDump failure in Foundation/Platform/CrashHandler.cpp with strict exception-context regression in test_crash_handler.cpp — FR-026, SC-011.
+- [x] T052 [US2] Update tests/integration/cw/*.test.sqf for production-before-placement and add native pointer/startup regression; build and verify 720p/1080p, Foundation/Rust, record evidence in verification.md — FR-023–026, SC-010/011.
+- [ ] T053 Reconcile spec/plan/tasks/contracts/docs/rts-first-slice.md, commit/push existing PR into develop and inspect CI; reopen updated game — FR-008/023–026.
+
+Dependencies: T048/T049/T050/T051 → T052 → T053. Crash-handler research is delegated per speckit-plan research-agent instruction; no concurrent edits to mission/state.
