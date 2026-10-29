@@ -398,6 +398,7 @@ GameValue DayTime(const GameState* state);
 GameValue EnableEndDialog(const GameState* state);
 GameValue EndGame(const GameState* state);
 GameValue ForceEnd(const GameState* state);
+GameValue EndMission(const GameState* state, GameValuePar ending);
 GameValue GameTime(const GameState* state);
 GameValue GetAcceleratedTime(const GameState* state);
 GameValue GetMusicVolume(const GameState* state);
@@ -1038,6 +1039,7 @@ static const GameFunction* GetExtUnary(int& count)
         GameFunction(GameNothing, "enableRadio", EnableRadio, GameBool),
 
         GameFunction(GameNothing, "showCinemaBorder", ShowCinemaBorder, GameBool),
+        GameFunction(GameNothing, "endMission", EndMission, GameString),
         GameFunction(GameNothing, "disableUserInput", DisableUserInput, GameBool),
         GameFunction(GameNothing, "loadMission", LoadMission, GameString),
         GameFunction(GameNothing, "onPlayerConnected", OnPlayerConnected, GameString),

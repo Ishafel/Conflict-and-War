@@ -12,8 +12,13 @@ triAssertEq [triDisplay,0]
 triClick 7390
 triSimUntil { (count CWR_RTS)==19 }
 triSimUntil { dialog }
+triAssertEq [triGetCinemaBorder,false]
 triAssert [(triGetControlVisible 7301)]
 triAssert [isObjectHidden player]
 triAssertEq [CWR_RTS select 13,70]
 triScreenshot "everon_from_menu"
+triClick 7316
+triSimUntil { triDisplay==0 }
+triAssert [(triGetControlVisible 7390)]
+triScreenshot "returned_to_menu"
 triEndTest

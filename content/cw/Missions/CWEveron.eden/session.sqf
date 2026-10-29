@@ -243,5 +243,5 @@ CWR_Tick={
         ctrlEnable [7311,(!(isNull (CWR_RTS select 2))) && ((CWR_RTS select 3)<0) && ((CWR_RTS select 0)>=(CWR_Config select 2)) && ((count (CWR_RTS select 4))<(CWR_Config select 5))];
     }; true
 };
-CWR_Stop={call CWR_Clear; endMission "END1"; true};
+CWR_Stop={call CWR_Clear; endMission "END1"; forceEnd; true};
 true

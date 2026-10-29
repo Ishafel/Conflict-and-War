@@ -73,6 +73,7 @@
 using namespace Poseidon;
 extern char LoadFile[];
 extern RString GMapOnSingleClick;
+void ShowCinemaBorder(bool show);
 
 namespace Poseidon
 {
@@ -527,6 +528,8 @@ bool World::InitVehicles(GameMode gameMode, ArcadeTemplate& t)
     ProgressStart(disp);
 
     _mode = gameMode;
+    // Reset the default before mission init, so authored camera settings survive.
+    ::ShowCinemaBorder(true);
     // Pillarbox / "4:3 dark-around overlay" treatment is meaningful
     // only during gameplay.  Menu intro (random cutscene) shares
     // CameraEffect::Draw but should keep its scene full-width.

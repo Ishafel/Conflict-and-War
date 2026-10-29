@@ -1,6 +1,7 @@
 // FR-009/010 and SC-005: real viewport input, minimap isolation and 3D production.
 triSimUntil { (count CWR_RTS)==19 }
 triSimUntil { dialog }
+triAssertEq [triGetCinemaBorder,false]
 triAssert [(triGetControlVisible 7301)]
 triAssert [(triGetControlVisible 7304)]
 triAssertEq [(triControlText 7310),""]

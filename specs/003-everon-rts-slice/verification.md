@@ -142,3 +142,19 @@ The Windows writer-thread change follows supported DbgHelp guidance and passes s
 
 Final native results: targeted final720 feedback/menu/menu_demo/placement4/4 PASS57.7s, build/rts-order-final720. Together with unchanged camera/interface/mouse/production/readiness in the initial suite, all9 current scenarios passed; this is not a claim that the initial combined run passed. Feedback1080 1/1 PASS37.0s, build/rts-order-final1080; includes READY label still present after2s and correct debit/cancel/deploy/group behavior. First gameplay frame captured using --test-type screenshot --screenshot-delay1 at720p and1080p; native image inspection shows the commander camera/sidebar, no first-person body. This is a deliberately exiting validation launch, separate from the live client reopened after publication.
 Converge: FR-023–025 implemented and Windows checks PASS; FR-026 local Windows PASS but new native macOS and CI-specific dump outcome remain to be inspected. Remaining macOS gameplay and evaluator legacy tasks already exist; no duplicate convergence tasks.
+
+## Camera-border correction after owner screenshot (FR-027/028, SC-012)
+
+The earlier first-frame images proved the elevated camera but visibly contained black margins. They did not prove a correct full play area; that visual defect was missed in review. Owner screenshot exposed it. AspectSettings world rectangle is full; the CinemaBorder overlay was re-enabled by DisplayMission after synchronous init had disabled it. Default now resets in InitVehicles before callbacks; late overwrite removed. Explicit cutscene border calls remain.
+
+Spec Kit requirement quality5/5, Analyze: FR-027→T054/T056, FR-028→T055/T056, no new unmapped requirement or constitution violation. No image generation needed for a lifecycle correction.
+
+Windows native build PASS20261029-221937; final staging PASS build/rts-border-stage-final.log. Initial build caught wrong global/namespace declaration and ambiguous RString enum overload; both corrected before verification.
+- RTS unit6/6,36assertions PASS.
+- border720 feedback/readiness2PASS, menu2FAIL: forceEnd alone never changes EndMode. Added validated standard endMission via existing EndMode mapping.
+- Next menu2FAIL: automation intentionally exits process at mission completion. Normal interactive menu tests use no_autotest with --strict, retaining fatal script/engine errors; all other tests keep automation. That exposed a debriefing screen; sandbox description now sets debriefing=0 to meet direct MENU navigation.
+- Final native menu/menu_demo2/2 PASS6.0s, build/rts-border-menu-final, verifies menu→Everon→menu in both executables with border=false. Ordinary authored mission retains border=true (readiness test).
+- Attempt to stage while a test still held resource files failed explicitly; staging succeeded after test completion, no copy error suppressed.
+- Screenshot build/rts-border720/feedback/000_first_rts_view.png inspected: terrain reaches play-area edges with sidebar unchanged, observer hidden.
+
+Final1080 feedback/camera/interface3/3 PASS73.1s, build/rts-border1080. First gameplay-frame720p/1080p captured with --screenshot-delay1 and inspected: full terrain up to the play-area edges, no cinematic mask. No further economic/input changes after these tests. Converge: FR-027/028 satisfied on native Windows; existing macOS runtime follow-up remains.

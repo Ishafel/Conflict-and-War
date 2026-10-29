@@ -128,3 +128,9 @@ The owner rejected the command map as the main screen after seeing it in-game. T
 - **SC-011**: Native Windows crash regression and Rust workspace pass; subsequent native macOS CI determines Unix lifecycle results. Do not claim macOS gameplay verified from CI compilation.
 
 FR-023 supersedes the earlier place-then-build order throughout US2/edge cases and the interactive feedback acceptance. Cancellation means canceling the placement cursor, not refunding or destroying an order.
+
+## Camera border regression — 2026-10-29
+
+- **FR-027**: The RTS world fills the available play area without cinematic black borders from startup onward; menu launch, direct launch, restart, pan/zoom and viewport picking remain consistent at720p/1080p. Ordinary cutscenes retain their cinematic borders.
+- **FR-028**: MENU ends the slice through an available game command and returns to the main menu, with no script error or process abort.
+- **SC-012**: Native screenshots show terrain reaching the left/top/bottom of the play area, and automatic tests verify disabled cinematic border and menu→slice→menu.

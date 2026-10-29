@@ -8,3 +8,5 @@ The compatible native property name remains selectionPosition; its expression no
 
 ## Production-before-placement correction (FR-023–025)
 7310 idle starts paid timer; producing rejects repeat; READY activates ghost; cancel preserves READY; deployment consumes it and enables 7311 immediately. Progress[2] means awaiting placement for building card. Session length19, ready at18. Observer isObjectHidden=true throughout RTS and false after Clear. Unscheduled mission init establishes camera before rendered gameplay.
+
+FR-027/028: no cinematic border around RTS world. MENU7316 clears session and uses endMission plus forceEnd; menu test must reach display0 again.

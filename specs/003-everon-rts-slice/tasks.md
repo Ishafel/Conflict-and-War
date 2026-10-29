@@ -112,6 +112,14 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 - [x] T050 Fix portable Unix child lifecycle regression in engine/Trident/src/client/instance.rs, retaining running/dead and zombie discrimination — FR-026, SC-011.
 - [x] T051 Investigate and fix Windows MiniDumpWriteDump failure in Foundation/Platform/CrashHandler.cpp with strict exception-context regression in test_crash_handler.cpp — FR-026, SC-011.
 - [x] T052 [US2] Update tests/integration/cw/*.test.sqf for production-before-placement and add native pointer/startup regression; build and verify 720p/1080p, Foundation/Rust, record evidence in verification.md — FR-023–026, SC-010/011.
-- [ ] T053 Reconcile spec/plan/tasks/contracts/docs/rts-first-slice.md, commit/push existing PR into develop and inspect CI; reopen updated game — FR-008/023–026.
+- [x] T053 Reconcile spec/plan/tasks/contracts/docs/rts-first-slice.md, commit/push existing PR into develop and inspect CI; reopen updated game — FR-008/023–026.
 
 Dependencies: T048/T049/T050/T051 → T052 → T053. Crash-handler research is delegated per speckit-plan research-agent instruction; no concurrent edits to mission/state.
+
+## Phase 14: Camera border regression
+
+- [x] T054 [US1] Move cinematic default before mission init in WorldInit.cpp and remove late overwrite in DisplayUIMenus.cpp; expose read-only border getter/test assertions — FR-027, SC-012.
+- [x] T055 [US3] Register validated endMission in GameStateExtWorld.cpp/GameStateExt.cpp and use it with forceEnd in session.sqf; verify menu→Everon→MENU in menu/menu_demo tests — FR-028, SC-012.
+- [x] T056 Native build/targeted gameplay, inspect720p/1080p first frames, update verification.md, commit/push existing develop PR and reopen client — FR-027/028, SC-012.
+
+Dependencies T054/T055→T056.

@@ -1,6 +1,7 @@
 // FR-018..022: actual pointer preview, production phases, exact clicks and group drag.
 triSimUntil { (count CWR_RTS)==19 }
 triSimUntil { dialog }
+triAssertEq [triGetCinemaBorder,false]
 triAssertExcludes [triVisibleTexts,"ONLINE"]
 triAssert [isObjectHidden player]
 triScreenshot "first_rts_view"

@@ -1,6 +1,9 @@
 tags = ["cw", "rts", "full_game", "headful"]
 binary = "PoseidonGameDemo"
 no_menu = true
-extra_args = ["--no-menu-scene"]
+# Exercise the interactive return-to-menu lifecycle, not auto-exit on mission end.
+# --strict retains fatal handling for every script/engine error.
+no_autotest = true
+extra_args = ["--no-menu-scene", "--strict"]
 timeout = 90
 assert_timeout = 30

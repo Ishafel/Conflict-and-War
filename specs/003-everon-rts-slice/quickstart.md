@@ -23,3 +23,5 @@ Interactive feedback: BUILD → barracks card displays a translucent model follo
 
 ## Revised validation (FR-023–026)
 Order barracks: credits2000, no barracks or ghost during15s. Wait READY; click, verify green/red ghost. Cancel, click READY again, deploy valid site: still2000, train immediately. Verify produced soldiers visible/selectable, initial observer hidden; menu/direct starts show commander view from first gameplay frame. Run native crash/RTS unit regressions, full Rust workspace and C&W Trident suite; inspect latest CI per platform.
+
+FR-027/028: inspect first-frame edges and after menu launch at720p/1080p; MENU returns display0 without Script error.

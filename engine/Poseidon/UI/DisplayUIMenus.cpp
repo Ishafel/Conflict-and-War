@@ -823,8 +823,6 @@ DisplayMission::DisplayMission(ControlsContainer* parent, bool editor, bool eras
     ContinueSaved = editor || GWorld->GetMode() == GModeNetware;
 
     GWorld->ForceEnd(false);
-
-    ShowCinemaBorder(true);
 }
 
 ControlObject* DisplayMission::OnCreateObject(int type, int idc, const ParamEntry& cls)
