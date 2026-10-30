@@ -43,3 +43,5 @@ State[18] is a paid-ready bool; state[3]>=0 means producing, -1 means no active 
 Presentation pass FR-029–032 keeps economic/selection state and20-field contract. Context copy is derived from category, order deadline, READY, barracks and selected-owned units; no UI-owned price/timer logic. Camera smoothing, if adopted, is per viewport and cleared on focus loss/dialog lifecycle.
 
 CWR_CameraConfig=[initialAltitude55,FOV0.58,minAltitude30,maxAltitude150,panSpeedPerAltitude0.65]. Wheel adjusts altitude proportionally; native smoothing integrates input over time. Home resets epoch[19] and desired view synchronously.
+
+FR-033–035 retain20-field state. Tooltip visibility is derived from visible card hover and current category, with no stored hover flag. Minimap world center is the camera ground target focus+[12,12], while map zoom retains its map scale.

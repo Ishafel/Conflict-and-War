@@ -12,3 +12,5 @@ The compatible native property name remains selectionPosition; its expression no
 FR-027/028: no cinematic border around RTS world. MENU7316 clears session and uses endMission plus forceEnd; menu test must reach display0 again.
 
 Presentation pass retains7300/7301 and existing control IDs.76% world/24% panel; text uses distinct existing title/body/mono families. Operation and selection context occupy lower panel instead of empty slot grid; native progress overlays still derive state from callbacks. Header/help no longer look like console instructions. Category active state and locked infantry explanation must be visible.
+
+FR-033–035: compact cards keep7310/7311, descriptions7362/7363 plus popup frame7367/7368 are hover-only. ContextTitle7364 and ContextPlate are removed. ctrlIsHovered returns bool for a visible control bounds even disabled; ctrlMapCenter takes[id,[X,Y,ATL]], ctrlMapGetCenter id returns[X,Y,0]. Missing map returns[]. Pictures use keepAspect=1 to fit rather than stretch.

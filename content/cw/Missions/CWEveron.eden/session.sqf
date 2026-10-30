@@ -23,13 +23,15 @@ CWR_Clear={
         deleteMarker "CWR_HQ"; deleteMarker "CWR_Barracks";
     }; true
 };
+CWR_CameraTarget={private ["_f"]; _f=CWR_RTS select 12; [(_f select 0)+12,(_f select 1)+12,0]};
+CWR_SyncMap={if (dialog) then {ctrlMapCenter [7304,call CWR_CameraTarget]}; true};
 CWR_UpdateCamera={
     private ["_f","_alt","_cam"];
     _f=CWR_RTS select 12; _alt=CWR_RTS select 13; _cam=CWR_RTS select 8;
-    _cam camSetTarget [(_f select 0)+12,(_f select 1)+12,0];
-    _cam camSetPos [_f select 0,(_f select 1)-_alt*0.85,_alt]; _cam camCommit 0; true
+    _cam camSetTarget (call CWR_CameraTarget);
+    _cam camSetPos [_f select 0,(_f select 1)-_alt*0.85,_alt]; _cam camCommit 0; call CWR_SyncMap; true
 };
-CWR_Command={CWR_RTS set [7,0]; if (!dialog) then {createDialog "CWR_Command"}; true};
+CWR_Command={CWR_RTS set [7,0]; if (!dialog) then {createDialog "CWR_Command"}; call CWR_SyncMap; call CWR_Tick; true};
 CWR_Start={
     private ["_hq","_cam","_p"];
     call CWR_Clear; _p=[6519.04,6473.68,0]; _hq="MASH" createVehicle _p;
@@ -37,7 +39,7 @@ CWR_Start={
         player allowDamage false; removeAllWeapons player; player hideObject true;
         _cam="camera" camCreate [6519.04,6390,70]; _cam cameraEffect ["internal","back"];
         _cam camSetFov (CWR_CameraConfig select 1); showCinemaBorder false;
-        CWR_RTS=[3000,_hq,objNull,-1,[],[],objNull,0,_cam,"Order barracks. Place when READY.",true,-1,+_p,CWR_CameraConfig select 0,0,[],[],[],false,0];
+        CWR_RTS=[3000,_hq,objNull,-1,[],[],objNull,0,_cam,"",true,-1,+_p,CWR_CameraConfig select 0,0,[],[],[],false,0];
         createMarker ["CWR_HQ",_p]; "CWR_HQ" setMarkerType "Flag"; "CWR_HQ" setMarkerText "C&W HQ";
         CWR_RTS set [11,player addAction ["C&W: Command base","command.sqs"]];
         call CWR_UpdateCamera; call CWR_Command; call CWR_Tick; true
@@ -184,7 +186,7 @@ CWR_TrainCardState={
     [_p,count _q,_ready]
 };
 CWR_Tick={
-    private ["_b","_q","_p","_g","_u","_rest","_i"];
+    private ["_b","_q","_p","_g","_u","_rest","_i","_hover"];
     _b=CWR_RTS select 2; _q=CWR_RTS select 4;
     if (((CWR_RTS select 3)>=0) && (time>=(CWR_RTS select 3))) then {
         CWR_RTS set [3,-1]; CWR_RTS set [18,true]; CWR_RTS set [9,"Barracks READY. Click its card to place."];
@@ -214,15 +216,17 @@ CWR_Tick={
         };
     };
     if (dialog) then {
+        call CWR_SyncMap;
+        _hover=false;
+        if ((CWR_RTS select 14)==0) then {_hover=ctrlIsHovered 7310} else {_hover=ctrlIsHovered 7311};
+        {ctrlShow [_x,_hover]; ctrlEnable [_x,false]} forEach [7362,7363,7367,7368];
         ctrlSetText [7302,format ["%1",CWR_RTS select 0]];
-        ctrlSetText [7330,"BARRACKS / 1000"];
-        if ((CWR_RTS select 3)>=0) then {ctrlSetText [7330,"BARRACKS / BUILDING"]};
-        if (CWR_RTS select 18) then {ctrlSetText [7330,"BARRACKS / READY"]};
-        if (!(isNull (CWR_RTS select 2))) then {ctrlSetText [7330,"BARRACKS / DEPLOYED"]};
+        ctrlSetText [7330,format ["BARRACKS / %1",CWR_Config select 0]];
+        ctrlSetText [7331,format ["RIFLEMAN / %1",CWR_Config select 2]];
+        if ((CWR_RTS select 3)>=0) then {ctrlSetText [7330,"BUILDING"]};
+        if (CWR_RTS select 18) then {ctrlSetText [7330,"READY / PLACE"]};
+        if (!(isNull (CWR_RTS select 2))) then {ctrlSetText [7330,"BARRACKS"]};
         ctrlSetText [7303,CWR_RTS select 9];
-        ctrlSetText [7364,"BASE COMMAND"];
-        if ((count (CWR_RTS select 16))>0) then {ctrlSetText [7364,format ["SELECTED / %1 INFANTRY",count (CWR_RTS select 16)]]};
-        if ((CWR_RTS select 7)==1) then {ctrlSetText [7364,"PLACE STRUCTURE"]};
         ctrlSetText [7365,"Select / drag     Move / ground click     Pan / WASD     Zoom / wheel"];
         if ((CWR_RTS select 7)==1) then {ctrlSetText [7365,"Place / left click     Keep ready / right click     Pan / WASD     Zoom / wheel"]};
         ctrlShow [7360,(CWR_RTS select 14)==0]; ctrlShow [7361,(CWR_RTS select 14)==1];

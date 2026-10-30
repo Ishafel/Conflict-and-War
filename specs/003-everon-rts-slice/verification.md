@@ -181,3 +181,20 @@ Prior commit3397a4e Windows push and PR CI both SUCCESS when inspected; macOS jo
 Converge: presentation requirements implemented and verified on Windows; no new unbuilt runtime work found. Existing macOS gameplay/evaluator follow-ups remain explicit.
 
 Final startup-resource preview7201/1 PASS4.2s after waiting for fade-in; native720/1080 images inspected at full opacity. FR-010 wording reconciled with FR-030 presentation pass (portrait plus contextual information replaces placeholder card grid). No runtime changes after stable720/1080 checks.
+
+## Compact sidebar and minimap follow — 2026-10-30 (FR-033–035, SC-014)
+
+Owner correction replaces permanent context/selection column with hover-only descriptions and compact production cards. Spec Kit spec/plan/tasks prepared before runtime changes; prerequisites resolve003 and extension hooks are absent. Analyze: FR-033/034→T063/T065, FR-035→T064/T065; three requirements and SC-014 have implementation and native checks. Existing technology, licensing and external-data policy retained.
+
+Disabled cards are intentionally describable through visible bounds, without enabling their actions. Tick owns popup visibility/copy and clears it on pointer leave/category change; no Base Command controls remain. Opt-in keepAspect fits original portrait aspect in physical pixels; legacy pictures keep their default rendering. Minimap Center/GetCenter uses the actual camera ground target; sync clears pending map animation and runs on camera updates/dialog open/Tick. Mission state remains20 fields.
+
+Windows native evidence:
+- C++ full build PASS20261030-065120, final native build PASS20261030-065611, final content staging PASS20261030-070304.
+- Complete720p suite10/10 PASS178.9s, build/rts-compact-final720, no retries. Includes camera, physical selection/group movement, placement, production, menus and demo.
+- Final1080p camera/feedback/presentation3/3 PASS47.2s, build/rts-compact-final1080. Native hover enter/leave, locked and producing cards covered; disabled clicks retain credit/queue checks.
+- Additional final presentation720p1/1 PASS4.6s (build/rts-compact-hover720),1024x7681/1 PASS4.5s (build/rts-compact-final43). These add producing-hover assertions after the complete720p suite; runtime source unchanged.
+- RTS units8/8,52assertions PASS, build/rts-compact-unit.log.
+- Native screenshots inspected at720p/1080p/4:3: compact_base, barracks_hover, locked_infantry_hover;1080p minimap_after_pan inspected. Images preserve proportions; description fits beside sidebar and disappears off-card. Camera regression compares map center with target within0.1m initially, after pan and Home, and verifies pan changed the map center.
+- git diff --check PASS. No new macOS native build/run performed in this Windows session.
+
+Converge: three correction requirements, SC-014 and both implementation decisions satisfied on Windows; no new missing/contradicting/unrequested implementation. Existing macOS and legacy evaluator/performance follow-ups remain T016/T026–028/T041; no duplicate tasks appended. Publication uses the existing feature PR into develop; no merge.

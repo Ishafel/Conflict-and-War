@@ -84,10 +84,10 @@
 
 ## Owner correction — 2026-10-27
 
-The owner rejected the command map as the main screen after seeing it in-game. This supersedes the earlier tactical-map assumption and US1 map acceptance: the main play area MUST show the actual 3D Everon world continuously with an elevated oblique RTS camera. Commands place/select/move directly by clicking that world. The right sidebar MUST follow the supplied reference composition: small minimap at top, credits and category tabs, a two-column production area with portrait, contextual requirements and progress (the presentation pass replaces former placeholder slots). Art is original C&W, not copied reference pixels. No map/overview mode switching is required. Camera pan and zoom must stay available while the sidebar is open.
+The owner rejected the command map as the main screen after seeing it in-game. This supersedes the earlier tactical-map assumption and US1 map acceptance: the main play area MUST show the actual 3D Everon world continuously with an elevated oblique RTS camera. Commands place/select/move directly by clicking that world. The right sidebar MUST follow the supplied reference composition: small minimap at top, credits and category tabs, a compact two-column production grid with undistorted portraits, hover-only descriptions and progress. Art is original C&W, not copied reference pixels. No map/overview mode switching is required. Camera pan and zoom must stay available while the sidebar is open.
 
 - **FR-009**: Native 3D command viewport projects clicks through the current camera onto Everon terrain; sidebar/minimap clicks never issue world orders. Left click selects/places; right click moves/cancels. Arrow/WASD pan, wheel zoom, home returns HQ.
-- **FR-010**: Sidebar includes minimap, credits, build/infantry tabs, a two-column production area (portrait and contextual requirements), build/training progress, selection feedback; remains visible over the world at 720p and 1080p.
+- **FR-010**: Sidebar includes minimap, credits, build/infantry tabs, a compact two-column production grid (undistorted portraits and hover-only descriptions), build/training progress, selection feedback; remains visible over the world at 720p and 1080p.
 - **SC-005**: Runtime screenshot shows 3D terrain/base and the sidebar simultaneously; actual world clicks build barracks/select a soldier/order movement and sidebar clicks do not debit or move unless intended.
 
 ## Corrections from Windows review — 2026-10-27
@@ -143,3 +143,11 @@ Owner requests a coherent player-facing presentation rather than prototype UI.
 - **FR-031**: New original background/card raster assets are generated through imagegen, saved with reproducible prompt/provenance and runtime conversions; actual text remains native and sharp. Respect third-party notices and existing font licenses/mappings.
 - **FR-032**: UI distinguishes idle, producing, READY, placement, deployed, locked infantry and selection with readable text/contrast, active-category state and contextual help. No fake features or decorative controls presented as usable. Normal/hover/disabled states are coherent.
 - **SC-013**: Native Windows screenshots of menu, startup, empty base, production, READY, placement and selected infantry at720p/1080p show no clipped labels, overlapping controls, giant placeholder cells or cinematic borders. Camera and native input regression pass at both sizes. This is visual polish of the first slice, not a claim of finished combat/economy or modernized terrain assets.
+
+## Compact C&C sidebar correction — 2026-10-30
+
+- **FR-033**: Building/infantry descriptions appear only while hovering their production card, including locked/producing states, and disappear on pointer leave/category change. Remove the Base Command header/panel; retain unobtrusive action failure feedback.
+- **FR-034**: Production cards use compact C&C-style grid proportions with a short label and image that preserves its source aspect ratio during window resize. Replace the enlarged portrait-plus-permanent-description composition.
+- **FR-035**: Minimap center follows the RTS ground camera target continuously during pan and Home, without moving units, spending credits or changing the main view; initial/opened dialog starts synchronized.
+- **SC-014**: Native hover enter/leave and locked-card cases show/hide descriptions;720p/1080p and4:3 screenshots show compact undistorted images without Base Command. Camera pan/Home regressions compare the minimap world center to the camera target within0.1m near the base.
+FR-033/034 supersede the presentation pass's permanent contextual-description column and selection-status panel. Original key art/fonts/camera feel remain.

@@ -6,4 +6,5 @@ call CWR_Tick
 
 ? dialog: goto "loop"
 createDialog "CWR_Command"
+call CWR_Tick
 goto "loop"

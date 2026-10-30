@@ -58,15 +58,15 @@ class CWR_Card: CWR_Text
 {
     type=11; style=2; color[]={1,1,1,1}; colorActive[]={0.98,0.86,0.60,1}; colorFocusBg[]={0.78,0.66,0.40,0.10};
     soundEnter[]={"",0,1}; soundPush[]={"",0,1}; soundClick[]={"",0,1}; soundEscape[]={"",0,1};
-    x=0.785; y=0.49; w=0.096; h=0.205;
+    x=0.785; y=0.49; w=0.091; h=0.123;
 };
-class CWR_BarracksArt: CWR_Text { type=0; style=48; x=0.785; y=0.49; w=0.096; h=0.17; colorText[]={1,1,1,1}; text=""; };
+class CWR_BarracksArt: CWR_Text { type=0; style=48; x=0.785; y=0.49; w=0.091; h=0.095; keepAspect=1; colorText[]={1,1,1,1}; text=""; };
 class CWR_InfantryArt: CWR_BarracksArt {};
 class CWR_Command
 {
     idd=7300; movingEnable=0;
-    controlsBackground[]={"Steel","Panel","Edge","HeaderPlate","HeaderRule","MapFrame","EconomyPlate","SectionRule","CardFrame","ContextPlate","BottomRule","WorldTitlePlate","HelpPlate"};
-    controls[]={"World","Map","Header","Identity","Theatre","Credits","ResourceLabel","Status","TabBuild","TabInfantry","BuildArt","TrainArt","Build","Train","BuildLabel","TrainLabel","BuildSweep","TrainSweep","Production","Home","Exit","Help","WorldTitle","WorldSubtitle","BuildActive","TrainActive","DetailTitle","DetailBody","ContextTitle","TrainLock"};
+    controlsBackground[]={"Steel","Panel","Edge","HeaderPlate","HeaderRule","MapFrame","EconomyPlate","SectionRule","CardFrame","CardWell","BottomRule","WorldTitlePlate","HelpPlate"};
+    controls[]={"World","Map","Header","Identity","Theatre","Credits","ResourceLabel","Status","TabBuild","TabInfantry","BuildArt","TrainArt","Build","Train","BuildLabel","TrainLabel","BuildSweep","TrainSweep","Production","Home","Exit","Help","WorldTitle","WorldSubtitle","BuildActive","TrainActive","TooltipPlate","TooltipBorder","DetailTitle","DetailBody","TrainLock"};
     class World: CWR_Text { type=102; idc=7301; x=0; y=0; w=0.76; h=1; onWorldClick="call CWR_WorldClick"; onCameraInput="call CWR_CameraInput"; cameraResetToken="CWR_RTS select 19"; selectionPosition="call CWR_SelectionPosition"; selectableUnits="call CWR_SelectableUnits"; onBoxSelect="_units call CWR_SetSelection"; placementActive="(CWR_RTS select 7)==1"; placementClass="Barracks"; placementValid="call CWR_PreviewSite"; onPreviewHidden="CWR_RTS set [17,[]]"; };
     class Steel: CWR_Text { x=0.76; y=0; w=0.24; h=1; colorBackground[]={0.18,0.21,0.20,1}; };
     class Panel: CWR_Text { x=0.764; y=0; w=0.236; h=1; colorBackground[]={0.045,0.065,0.065,1}; };
@@ -85,23 +85,24 @@ class CWR_Command
     class TabInfantry: CWR_Button { idc=7321; x=0.884; y=0.413; w=0.091; h=0.043; text="INFANTRY"; sizeEx=0.018; action="call CWR_TabInfantry"; };
     class BuildActive: CWR_Text { idc=7360; x=0.785; y=0.458; w=0.091; h=0.003; colorBackground[]={0.83,0.68,0.39,1}; };
     class TrainActive: CWR_Text { idc=7361; x=0.884; y=0.458; w=0.091; h=0.003; colorBackground[]={0.83,0.68,0.39,1}; };
-    class SectionRule: CWR_Text { x=0.785; y=0.715; w=0.19; h=0.0015; colorBackground[]={0.24,0.28,0.25,1}; };
-    class CardFrame: CWR_Text { x=0.783; y=0.487; w=0.100; h=0.211; colorBackground[]={0.35,0.34,0.26,1}; };
+    class SectionRule: CWR_Text { x=0.785; y=0.635; w=0.19; h=0.0015; colorBackground[]={0.24,0.28,0.25,1}; };
+    class CardFrame: CWR_Text { x=0.783; y=0.487; w=0.095; h=0.129; colorBackground[]={0.35,0.34,0.26,1}; };
+    class CardWell: CWR_Text { x=0.785; y=0.49; w=0.091; h=0.123; colorBackground[]={0.045,0.06,0.055,1}; };
     class BuildArt: CWR_BarracksArt { idc=7340; };
     class Build: CWR_Card { text=""; idc=7310; action="call CWR_Build"; };
     class TrainArt: CWR_InfantryArt { idc=7341; };
     class Train: CWR_Card { text=""; idc=7311; action="call CWR_Train"; };
-    class BuildLabel: CWR_Text { idc=7330; x=0.785; y=0.66; w=0.096; h=0.035; style=2; sizeEx=0.0165; text="BARRACKS / 1000"; colorText[]={0.92,0.85,0.68,1}; colorBackground[]={0.075,0.095,0.09,1}; };
+    class BuildLabel: CWR_Text { idc=7330; x=0.785; y=0.585; w=0.091; h=0.028; style=2; sizeEx=0.015; text="BARRACKS / 1000"; colorText[]={0.92,0.85,0.68,1}; colorBackground[]={0.075,0.095,0.09,1}; };
     class TrainLabel: BuildLabel { idc=7331; text="RIFLEMAN / 100"; };
-    class BuildSweep: CWR_Text { type=103; idc=7350; x=0.785; y=0.49; w=0.096; h=0.17; productionState="call CWR_BuildCardState"; sizeEx=0.021; };
+    class BuildSweep: CWR_Text { type=103; idc=7350; x=0.785; y=0.49; w=0.091; h=0.095; productionState="call CWR_BuildCardState"; sizeEx=0.021; };
     class TrainSweep: BuildSweep { idc=7351; productionState="call CWR_TrainCardState"; };
-    class DetailTitle: CWR_Text { idc=7362; x=0.894; y=0.49; w=0.084; h=0.055; style=528; text="BARRACKS"; sizeEx=0.022; };
-    class DetailBody: CWR_Text { idc=7363; x=0.894; y=0.554; w=0.084; h=0.15; style=528; sizeEx=0.019; colorText[]={0.65,0.72,0.68,1}; text="1000 credits\n15 sec\n\nInfantry facility"; };
-    class Production: CWR_Label { idc=7305; x=0.785; y=0.731; w=0.19; h=0.03; sizeEx=0.018; text="FORCES 0  /  QUEUE 0"; };
-    class TrainLock: CWR_Text { idc=7366; x=0.785; y=0.49; w=0.096; h=0.17; style=528; sizeEx=0.018; text="REQUIRES\nBARRACKS"; colorText[]={0.78,0.77,0.67,1}; colorBackground[]={0.025,0.04,0.035,0.75}; };
-    class ContextPlate: CWR_Text { x=0.785; y=0.775; w=0.19; h=0.105; colorBackground[]={0.075,0.10,0.095,1}; };
-    class ContextTitle: CWR_Label { idc=7364; x=0.793; y=0.783; w=0.174; h=0.025; text="COMMAND STATUS"; sizeEx=0.0165; colorText[]={0.77,0.69,0.49,1}; };
-    class Status: CWR_Text { idc=7303; x=0.793; y=0.813; w=0.174; h=0.063; style=528; sizeEx=0.019; text="Order barracks to establish your base."; };
+    class TooltipPlate: CWR_Text { idc=7367; x=0.545; y=0.49; w=0.20; h=0.18; colorBackground[]={0.035,0.055,0.05,0.97}; };
+    class TooltipBorder: CWR_Text { idc=7368; x=0.545; y=0.49; w=0.20; h=0.18; style=64; colorText[]={0.58,0.51,0.33,1}; };
+    class DetailTitle: CWR_Text { idc=7362; x=0.555; y=0.50; w=0.18; h=0.035; style=528; text="BARRACKS"; sizeEx=0.022; };
+    class DetailBody: CWR_Text { idc=7363; x=0.555; y=0.542; w=0.18; h=0.12; style=528; sizeEx=0.019; colorText[]={0.65,0.72,0.68,1}; text="1000 credits\n15 sec\n\nInfantry facility"; };
+    class Production: CWR_Label { idc=7305; x=0.785; y=0.65; w=0.19; h=0.03; sizeEx=0.018; text="FORCES 0  /  QUEUE 0"; };
+    class TrainLock: CWR_Text { idc=7366; x=0.785; y=0.49; w=0.091; h=0.095; style=2; sizeEx=0.017; text="LOCKED"; colorText[]={0.78,0.77,0.67,1}; colorBackground[]={0.025,0.04,0.035,0.75}; };
+    class Status: CWR_Text { idc=7303; x=0.785; y=0.78; w=0.19; h=0.095; style=528; sizeEx=0.018; text=""; colorText[]={0.72,0.76,0.69,1}; };
     class BottomRule: CWR_Text { x=0.785; y=0.901; w=0.19; h=0.0015; colorBackground[]={0.24,0.28,0.25,1}; };
     class Home: CWR_Button { idc=7315; x=0.785; y=0.923; w=0.091; h=0.042; text="CENTER HQ"; sizeEx=0.017; action="call CWR_Home"; };
     class Exit: CWR_Button { idc=7316; x=0.884; y=0.923; w=0.091; h=0.042; text="MENU"; sizeEx=0.017; action="call CWR_Stop"; };

@@ -27,3 +27,5 @@ Order barracks: credits2000, no barracks or ghost during15s. Wait READY; click, 
 FR-027/028: inspect first-frame edges and after menu launch at720p/1080p; MENU returns display0 without Script error.
 
 Presentation review: capture main menu/startup, initial base, midway/READY order, green/red placement, locked/available infantry and selection at1280×720 and1920×1080. Inspect text clipping/contrast/spacing and world edges, then run camera/feedback/interface/menu regressions. Verify release stops motion, Home view, sliderless wheel zoom and pointer/card isolation. Preserve economic and production regression.
+
+Hover barracks/locked infantry and leave to world: descriptions must disappear and credits remain3000. Pan camera and Home: minimap center tracks ground target. Inspect compact portraits at1280×720,1920×1080 and1024×768; no Base Command panel. Run camera/presentation plus complete C&W regressions.

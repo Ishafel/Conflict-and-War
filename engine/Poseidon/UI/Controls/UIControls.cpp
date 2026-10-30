@@ -70,6 +70,8 @@ const float textBorder = 0.005;
 CStatic::CStatic(ControlsContainer* parent, const ParamEntry& cls, float x, float y, float w, float h, RString text)
     : Control(parent, CT_STATIC, cls >> "idc", cls >> "style", x, y, w, h)
 {
+    const auto* keep = cls.FindEntry("keepAspect");
+    _keepAspect = keep && bool(*keep);
     _enabled = ((_style & ST_TYPE) == ST_MULTI);
     _texture = nullptr;
     _bgColor = GetPackedColor(cls >> "colorBackground");
@@ -94,6 +96,8 @@ CStatic::CStatic(ControlsContainer* parent, const ParamEntry& cls, float x, floa
 
 CStatic::CStatic(ControlsContainer* parent, int idc, const ParamEntry& cls) : Control(parent, CT_STATIC, idc, cls)
 {
+    const auto* keep = cls.FindEntry("keepAspect");
+    _keepAspect = keep && bool(*keep);
     _texture = nullptr;
     _bgColor = GetPackedColor(cls >> "colorBackground");
     _ftColor = GetPackedColor(cls >> "colorText");
@@ -541,7 +545,18 @@ void CStatic::OnDraw(float alpha)
             if (_texture)
             {
                 MipInfo mip = GLOB_ENGINE->TextBank()->UseMipmap(_texture, 0, 0);
-                GLOB_ENGINE->Draw2D(mip, ftColor, Rect2DPixel(xx, yy, ww, hh));
+                float pictureX = xx, pictureY = yy, pictureW = ww, pictureH = hh;
+                if (_keepAspect && _texture->AWidth() > 0 && _texture->AHeight() > 0 && ww > 0 && hh > 0)
+                {
+                    const float aspect = float(_texture->AWidth()) / _texture->AHeight();
+                    if (ww / hh > aspect)
+                        pictureW = hh * aspect;
+                    else
+                        pictureH = ww / aspect;
+                    pictureX += (ww - pictureW) * 0.5f;
+                    pictureY += (hh - pictureH) * 0.5f;
+                }
+                GLOB_ENGINE->Draw2D(mip, ftColor, Rect2DPixel(pictureX, pictureY, pictureW, pictureH));
                 // GLOB_ENGINE->TextBank()->ReleaseMipmap();
             }
             return; // do not draw any text (text field content texture name)

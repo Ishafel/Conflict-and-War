@@ -134,3 +134,11 @@ Dependencies T054/T055→T056.
 - [x] T062 Reconcile contracts/docs and converge, commit/push existing develop PR, inspect CI availability and leave polished client open — FR-008/029–032.
 
 Dependencies: T057 research and T058 art may overlap; shared mission integration is serial. T057–060→T061→T062.
+
+## Phase 16: Compact sidebar and minimap follow
+
+- [x] T063 [US3] Add bounds-only ctrlIsHovered and aspect-preserving picture option in GameStateExtWorldDialog.cpp/GameStateExt.cpp/UIControls.cpp; compact resources.cpp cards, remove Base Command and show descriptions only on hover via session.sqf — FR-033/034, SC-014.
+- [x] T064 [US1] Add map center read/write UI commands via CStaticMap, synchronize session.sqf camera/dialog/minimap and verify pan/Home positions — FR-035, SC-014.
+- [x] T065 Native build, hover/map input and full regressions, inspect720p/1080p/4:3 images, update verification/spec consistency, commit/push existing develop PR and reopen client — FR-033–035, SC-014.
+
+T063/T064→T065.

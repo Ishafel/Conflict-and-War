@@ -27,7 +27,7 @@ triAssert [isNull (CWR_RTS select 2)]
 triSimFrames 2
 _wait=time+2
 triSimUntil { time>=_wait }
-triAssertEq [triControlText 7330,"BARRACKS / READY"]
+triAssertEq [triControlText 7330,"READY / PLACE"]
 triScreenshot "build_ready"
 triClick 7310
 triCursorMove [0,0]

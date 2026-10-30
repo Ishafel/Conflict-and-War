@@ -460,6 +460,9 @@ GameValue CtrlEnable(const GameState* state, GameValuePar oper1);
 GameValue CtrlEnabled(const GameState* state, GameValuePar oper1);
 GameValue CtrlGetText(const GameState* state, GameValuePar oper1);
 GameValue CtrlSetText(const GameState* state, GameValuePar oper1);
+GameValue CtrlIsHovered(const GameState*, GameValuePar);
+GameValue CtrlMapCenter(const GameState*, GameValuePar);
+GameValue CtrlMapGetCenter(const GameState*, GameValuePar);
 GameValue CtrlShow(const GameState* state, GameValuePar oper1);
 GameValue CtrlVisible(const GameState* state, GameValuePar oper1);
 GameValue CutObj(const GameState* state, GameValuePar oper1);
@@ -1090,6 +1093,9 @@ static const GameFunction* GetExtUnary(int& count)
 
         GameFunction(GameString, "ctrlText", CtrlGetText, GameScalar),
         GameFunction(GameNothing, "ctrlSetText", CtrlSetText, GameArray),
+        GameFunction(GameBool, "ctrlIsHovered", CtrlIsHovered, GameScalar),
+        GameFunction(GameNothing, "ctrlMapCenter", CtrlMapCenter, GameArray),
+        GameFunction(GameArray, "ctrlMapGetCenter", CtrlMapGetCenter, GameScalar),
 
         GameFunction(GameString, "buttonAction", ButtonGetAction, GameScalar),
         GameFunction(GameNothing, "buttonSetAction", ButtonSetAction, GameArray),
