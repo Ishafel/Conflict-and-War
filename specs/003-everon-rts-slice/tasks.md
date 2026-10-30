@@ -65,14 +65,14 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 
 ## Legacy follow-up outside first slice
 
-- [ ] T026 Воспроизвести и исправить область EvalBreak у call/exitWith в engine/Evaluator/express.cpp с отдельной спецификацией и регрессионными тестами. Влияние: ранние возвраты внутри callback могут прервать вызывающее выражение. Текущий срез использует обычные условные выражения и не зависит от этого поведения.
+- [x] T026 Воспроизвести и исправить область EvalBreak у call/exitWith в engine/Evaluator/express.cpp с отдельной спецификацией и регрессионными тестами. Влияние: ранние возвраты внутри callback могут прервать вызывающее выражение. Текущий срез использует обычные условные выражения и не зависит от этого поведения.
 
 ## Phase 8: Convergence
 
 Сверка 2026-10-27: 10 FR, 5 SC, 7 acceptance scenarios, 6 решений плана, 5 принципов конституции. Два missing-пробела: HIGH — нативные macOS-доказательства; MEDIUM — отдельное legacy-исправление. Contradicts/unrequested/partial: 0. Windows-реализация и доказательства перечислены в verification.md. Это не заявление о полной готовности всех платформ.
 
-- [ ] T027 HIGH: Выполнить нативные configure/build/test/run на macOS arm64 и x86_64, проверить 3D-ввод и панель, сохранить команды/результаты в specs/003-everon-rts-slice/verification.md и закрыть T016 по доказательствам — FR-008, T016, Constitution IV (missing). Требуются соответствующие macOS-хосты; удалённый CI пока не запускался.
-- [ ] T028 MEDIUM: Выполнить отдельный Spec Kit цикл для унаследованной области EvalBreak в engine/Evaluator/express.cpp, добавить минимальное воспроизведение вложенных call/exitWith и регрессию до исправления; связать результат с T026 — T026, Constitution III (missing). За пределами игрового среза; не расширять текущую миссию ради этой ошибки.
+- [ ] T027 HIGH: Выполнить нативные configure/build/test/run на macOS arm64 и x86_64, проверить 3D-ввод и панель, сохранить команды/результаты в specs/003-everon-rts-slice/verification.md и закрыть T016 по доказательствам — FR-008, T016, Constitution IV (missing). Сборки и CI-проверки arm64/x64 для7abc3a4 прошли2026-10-30; остаётся игровой запуск/3D-ввод/панель на соответствующих macOS-хостах.
+- [x] T028 MEDIUM: Выполнить отдельный Spec Kit цикл для унаследованной области EvalBreak в engine/Evaluator/express.cpp, добавить минимальное воспроизведение вложенных call/exitWith и регрессию до исправления; связать результат с T026 — T026, Constitution III (missing). За пределами игрового среза; не расширять текущую миссию ради этой ошибки.
 
 ## Phase 9: Windows review corrections
 
@@ -94,7 +94,7 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 - [x] T038 Заменить абсолютные сроки пробуждения в трёх падающих potime-тестах на независимые chrono-скобки, сохранив минимальные длительности и единицы; добавить delayed workload и отрицательные показания — FR-016, SC-008.
 - [x] T039 Пересобрать FoundationTests, выполнить potime и полный Foundation на Windows, записать native Intel build PASS / 3 timing failures и ARM capacity cancellation для 35f0346 в verification.md — FR-008/016/017, SC-008.
 - [x] T040 Сделать коммит и обновить существующий PR develop, проверить новый Intel/Windows прогон; ARM capacity не скрывать и матрицу не менять — FR-016/017, SC-008.
-- [ ] T041 Отдельно оценить аппаратно-зависимые пороги precision/performance в tests/unit/engine/Poseidon/Foundation/Framework/test_potime.cpp и перенести требования пропускной способности в воспроизводимые benchmark-проверки. Эти тесты в текущем native прогоне прошли; это legacy follow-up вне трёх воспроизведённых отказов — Constitution III.
+- [x] T041 Отдельно оценить аппаратно-зависимые пороги precision/performance в tests/unit/engine/Poseidon/Foundation/Framework/test_potime.cpp и перенести требования пропускной способности в воспроизводимые benchmark-проверки. Эти тесты в текущем native прогоне прошли; это legacy follow-up вне трёх воспроизведённых отказов — Constitution III.
 
 ## Phase 12: Interactive RTS feedback
 
@@ -142,3 +142,9 @@ Dependencies: T057 research and T058 art may overlap; shared mission integration
 - [x] T065 Native build, hover/map input and full regressions, inspect720p/1080p/4:3 images, update verification/spec consistency, commit/push existing develop PR and reopen client — FR-033–035, SC-014.
 
 T063/T064→T065.
+
+## Legacy follow-up: array equality
+
+- [ ] T066 Reproduce and specify array equality separately in engine/Evaluator/express.cpp GameDataArray::IsEqualTo (currently always false); implement declared comparison semantics with regressions. Impact: value comparisons of arrays cannot succeed; current RTS uses scalar/object checks and the scope-exit tests compare elements directly. Outside the scope-exit/timer repair — Constitution III.
+
+T026/T028/T041 resolved by [004-evaluator-time-debt](../004-evaluator-time-debt/spec.md): corrected original-code reproduction, context-owned exit results and genuine error propagation; timer throughput migrated to a separate sampled benchmark. Native evidence: [verification](../004-evaluator-time-debt/verification.md). T066 is a separately recorded inherited comparison issue; macOS gameplay remains open.

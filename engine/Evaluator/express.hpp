@@ -593,6 +593,7 @@ class GameEvaluator : public RefCount
     int _listPrior; // parenthesis priority
     bool _checkOnly;
     EvalError _error;
+    GameValue _exitValue; // early-exit result, owned by this evaluation context
     RString _errorText; // user friendly error text
     int _errorCarretPos;
 
@@ -849,6 +850,8 @@ struct GameTypeType : public Poseidon::Foundation::EnumName
     void TypeError(GameType exp, GameType was, const char* name = nullptr) const;
 
     EvalError GetLastError() const;
+    //! Signal a successful early return from the current code scope.
+    void SignalExit(GameValuePar value) const;
     RString GetLastErrorText() const;
     int GetLastErrorPos() const;
 

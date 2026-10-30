@@ -71,6 +71,24 @@ jobs:
         run: ctest --preset ${{ matrix.preset }}
       - name: RTS projection and boolean regression tests without game data
         run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure -R "^PoseidonTests - (RTS (ray|drag|production|whole|camera)|tri assertions distinguish)"
+      - name: Evaluator scope exit regressions without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure --no-tests=error -R "^PoseidonCoreTests - Evaluator scope exit"
+      - name: Measure timer operation costs separately from correctness
+        shell: pwsh
+        run: |
+          $benchmark = "build/${{ matrix.preset }}/tests/benchmarks/PoseidonTimeBenchmarks"
+          if ($IsWindows) { $benchmark += '.exe' }
+          & $benchmark --benchmark-samples 50 --benchmark-resamples 1000 *> "build/${{ matrix.preset }}/potime-benchmark.log"
+          $benchmarkResult = $LASTEXITCODE
+          Get-Content "build/${{ matrix.preset }}/potime-benchmark.log"
+          exit $benchmarkResult
+      - name: Preserve timer benchmark measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: potime-benchmark-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/potime-benchmark.log
+          if-no-files-found: ignore
       - name: Compile Rust workspace
         if: runner.os == 'macOS'
         run: cargo build --workspace --locked

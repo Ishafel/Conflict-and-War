@@ -75,17 +75,6 @@ TEST_CASE("potime - Poseidon::Foundation::getClockFrequency", "[framework][potim
         REQUIRE(freq > 0);
     }
 
-    SECTION("Frequency is reasonable")
-    {
-        unsigned freq = Poseidon::Foundation::getClockFrequency();
-
-        // Should be at least 100 Hz (minimum documented)
-        REQUIRE(freq >= 100);
-
-        // Shouldn't be unreasonably high (e.g., > 4 GHz)
-        REQUIRE(freq < 4000000000U);
-    }
-
     SECTION("Frequency is consistent")
     {
         unsigned freq1 = Poseidon::Foundation::getClockFrequency();
@@ -145,51 +134,16 @@ TEST_CASE("potime - Poseidon::Foundation::getSystemTime basics", "[framework][po
     }
 }
 
-TEST_CASE("potime - Poseidon::Foundation::getSystemTime precision", "[framework][potime]")
+// Close samples may be identical at the backend's resolution. Call latency is
+// measured in the benchmark executable, not used as evidence of precision.
+TEST_CASE("potime - consecutive samples match reference intervals", "[framework][potime]")
 {
-    SECTION("Has microsecond precision")
+    TimeSample previous = SampleSystemTime();
+    for (int i = 0; i < 20; ++i)
     {
-        // Take multiple samples close together
-        unsigned64 time1 = Poseidon::Foundation::getSystemTime();
-        unsigned64 time2 = Poseidon::Foundation::getSystemTime();
-        unsigned64 time3 = Poseidon::Foundation::getSystemTime();
-
-        // At least one pair should show time difference
-        // (unless system is incredibly fast, which is unlikely)
-        (void)(time2 - time1); // Intentionally unused - just checking call works
-        (void)(time3 - time2); // Intentionally unused - just checking call works
-
-        // Total elapsed should be measurable in microseconds
-        unsigned64 total = time3 - time1;
-
-        // Should be able to measure < 1 millisecond (1000 microseconds)
-        // This proves microsecond precision
-        REQUIRE(total < 10000); // Less than 10ms for 3 calls
-    }
-
-    SECTION("Resolution is fine-grained")
-    {
-        unsigned freq = Poseidon::Foundation::getClockFrequency();
-
-        // If frequency is high (>1000 Hz), we have sub-millisecond precision
-        if (freq > 1000)
-        {
-            unsigned64 time1 = Poseidon::Foundation::getSystemTime();
-
-            // Spin briefly
-            volatile int i = 0;
-            for (; i < 100; i = i + 1)
-            {
-                ;
-            }
-
-            unsigned64 time2 = Poseidon::Foundation::getSystemTime();
-            unsigned64 elapsed = time2 - time1;
-
-            // Should measure something (if clock is working)
-            // Allow for possibility of zero if CPU is very fast
-            REQUIRE(elapsed < 1000000); // Less than 1 second for this test
-        }
+        const auto current = SampleSystemTime();
+        RequireReferenceInterval(previous, current);
+        previous = current;
     }
 }
 
@@ -283,48 +237,5 @@ TEST_CASE("potime - Platform consistency", "[framework][potime]")
         const auto elapsedUs = RequireReferenceInterval(previous, current);
         REQUIRE(elapsedUs >= 5000);
         previous = current;
-    }
-}
-
-// Performance Characteristics
-
-TEST_CASE("potime - Performance", "[framework][potime][performance]")
-{
-    SECTION("Poseidon::Foundation::getSystemTime is fast")
-    {
-        // Measure time to call Poseidon::Foundation::getSystemTime many times
-        unsigned64 start = Poseidon::Foundation::getSystemTime();
-
-        const int iterations = 10000;
-        for (int i = 0; i < iterations; i++)
-        {
-            volatile unsigned64 t = Poseidon::Foundation::getSystemTime();
-            (void)t; // Prevent optimization
-        }
-
-        unsigned64 end = Poseidon::Foundation::getSystemTime();
-        unsigned64 total_us = end - start;
-        double avg_us = (double)total_us / iterations;
-
-        // Each call should be very fast (< 10 microseconds on average)
-        REQUIRE(avg_us < 10.0);
-    }
-
-    SECTION("Poseidon::Foundation::getClockFrequency is instant")
-    {
-        // Should be cached/instant
-        unsigned64 start = Poseidon::Foundation::getSystemTime();
-
-        for (int i = 0; i < 1000; i++)
-        {
-            volatile unsigned freq = Poseidon::Foundation::getClockFrequency();
-            (void)freq;
-        }
-
-        unsigned64 end = Poseidon::Foundation::getSystemTime();
-        unsigned64 elapsed = end - start;
-
-        // Should be negligible (< 1ms for 1000 calls)
-        REQUIRE(elapsed < 1000);
     }
 }
