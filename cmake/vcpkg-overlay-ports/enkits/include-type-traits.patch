@@ -1,0 +1,9 @@
+diff --git a/src/TaskScheduler.cpp b/src/TaskScheduler.cpp
+--- a/src/TaskScheduler.cpp
++++ b/src/TaskScheduler.cpp
+@@ -24,3 +24,4 @@
+ #include <algorithm>
+-
++#include <type_traits>
++
+ #if defined __i386__ || defined __x86_64__

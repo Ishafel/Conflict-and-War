@@ -15,6 +15,7 @@ enum class GameModuleId
     Multiplayer,  ///< Multiplayer (IDC_MAIN_MULTIPLAYER)
     Editor,       ///< Mission editor (IDC_MAIN_EDITOR)
     Mods,         ///< Mod browser (IDC_MAIN_MODS)
+    RTS,          ///< Conflict & War first playable slice
 };
 
 // Describes a registered game module

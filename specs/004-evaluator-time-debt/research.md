@@ -1,0 +1,13 @@
+# Research
+## Scoped exits
+Decision: store the exit payload in GameEvaluator alongside its EvalError. EndContext already defines call/then boundaries and discards EvalBreak, but currently loses real errors and results. EvaluateMultiple must return the payload rather than Vyhod's error return; loops must inspect status before EndContext. Propagate genuine child error enum/text/caret without propagating consumed scope exits.
+Evidence: express.cpp StringCall/StringCallNoArg, StringThen/ArrayThen, StringRepeat/ForDoOp/ListForEach, EvaluateMultiple, EndContext. Native CLI reproduction found helper return undefined and direct loops continuing; unit reproductions are required before changes.
+Primary semantic reference: https://community.bohemia.net/wiki/exitWith — exits nearest code scope; direct loop exits terminate loop, exits in nested then return to parent. Research delegated through speckit-plan; no production edits delegated.
+Alternatives rejected: clearing every error masks real failures; merely clearing EvalBreak in call loses its payload; retaining TLS shares stale results across evaluator states; mass evaluator rewrite exceeds scope.
+## Timer correctness versus performance
+Decision: preserve interval bracketing against steady_clock and its1ms quantization allowance; replace call-duration/frequency upper limits with functional monotonic/reference checks. Dedicated Catch2 benchmark executable reports sampled mean/confidence statistics for system time and frequency, with compiler/build/platform metadata.
+Rationale: getSystemTime duration includes scheduling; total<10ms does not prove microsecond resolution. API frequency may validly saturate UINT_MAX on Windows. Existing oracle rejects stopped/backward/wrong-scale readings and remains in correctness CI.
+Alternatives rejected: relaxed throughput limits still depend on hardware; hiding the performance case skips rather than migrates coverage; manual one-shot timing lacks sampling; no new benchmark dependency necessary because Catch2 already supplies it.
+
+## Test oracle correction
+The engine-only GameDataArray::IsEqualTo currently returns false even for equal arrays (express.cpp). Regression tests must compare nested elements rather than using that unsupported legacy operation as an oracle. The default engine diagnostic provider also returns empty strings, so a scoped test provider supplies a distinctive division-by-zero diagnostic and restores the previous provider. No production equality/diagnostic behavior is changed for these fixture corrections. Array equality is recorded separately as slice T066, outside the two requested debts.

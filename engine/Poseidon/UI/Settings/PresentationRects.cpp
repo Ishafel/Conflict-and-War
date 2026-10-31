@@ -33,6 +33,12 @@ Rect Logical2DRect(const AspectSettings& aspect)
     return rect;
 }
 
+Rect RebaseRect(Rect control, Rect from, Rect to)
+{
+    return {(from.x + control.x * from.w - to.x) / to.w, (from.y + control.y * from.h - to.y) / to.h,
+            control.w * from.w / to.w, control.h * from.h / to.h};
+}
+
 Rect CenterRatioRect(float targetRatio, int viewportWidth, int viewportHeight)
 {
     targetRatio = SafeRatio(targetRatio);

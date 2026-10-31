@@ -198,7 +198,9 @@ DisplayMain::DisplayMain(ControlsContainer* parent) : Display(parent)
     // menu. Without this the base RscDisplayMainRemaster — restored by
     // MergeBaseResourceExtra so the Options screen works — would replace the mod's
     // menu and lose its branding.
-    const char* mainRsc = (!IsMenuOverriddenByMod() && Res.FindEntry("RscDisplayMainRemaster"))
+    const char* mainRsc = (!IsMenuOverriddenByMod() && Res.FindEntry("CWR_Main"))
+                              ? "CWR_Main"
+                              : (!IsMenuOverriddenByMod() && Res.FindEntry("RscDisplayMainRemaster"))
                               ? "RscDisplayMainRemaster"
                               : "RscDisplayMain";
     Load(mainRsc);

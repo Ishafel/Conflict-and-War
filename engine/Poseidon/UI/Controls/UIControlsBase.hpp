@@ -384,6 +384,7 @@ protected:
 	Ref<Font> _font;
 	float _size;
 	Ref<Texture> _texture;
+	bool _keepAspect = false;
 
 	PackedColor _color1;
 	PackedColor _color2;

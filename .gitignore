@@ -79,3 +79,5 @@ target/
 !docs/**/*.png
 !tests/missions/screenshot/**/*.bmp
 !tests/missions/screenshot/**/*.png
+# C&W own generated source artwork
+!content/cw/ui/*.png

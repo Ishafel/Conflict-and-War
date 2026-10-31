@@ -92,3 +92,14 @@ set_target_properties(PoseidonGame PROPERTIES
 
 include(${CMAKE_SOURCE_DIR}/cmake/DistCopy.cmake)
 dist_copy(PoseidonGame)
+
+# FR-002/007: stage only our mission, UI and original artwork, never retail data.
+add_custom_target(CWRContent ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/content/cw ${DIST_DIR}/cw
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/content/cw $<TARGET_FILE_DIR:PoseidonGame>/cw
+    COMMENT "Staging Conflict & War content"
+    VERBATIM
+)
+add_dependencies(PoseidonGame CWRContent)

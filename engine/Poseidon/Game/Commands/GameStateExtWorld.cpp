@@ -784,6 +784,19 @@ GameValue ForceEnd(const GameState* state)
     return NOTHING;
 }
 
+GameValue EndMission(const GameState* state, GameValuePar ending)
+{
+    const RString name = ending;
+    const EndMode mode = GetEnumValue<EndMode>(static_cast<const char*>(name));
+    if (mode < EMLoser || mode > EMEnd6)
+    {
+        state->SetError(EvalGen);
+        return NOTHING;
+    }
+    GWorld->SetEndMode(mode);
+    return NOTHING;
+}
+
 GameValue EndGame(const GameState* state)
 {
     if (AppConfig::Instance().IsSimulateMode())

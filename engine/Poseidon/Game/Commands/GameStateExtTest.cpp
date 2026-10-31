@@ -353,7 +353,7 @@ GameValue TriClick(const GameState* state, GameValuePar arg)
     return GameValue(true);
 }
 
-// triClickAt [idc, u, v] — like triClick but presses at the local (u, v) point
+// triClickAt [idc, u, v, button?] - presses at local (u, v); button 1 selects right click
 // inside the control instead of its centre.  Lets a test click PAST an edit
 // field's text (clicking beyond a short line drove CEdit::XToPos off the end).
 GameValue TriClickAt(const GameState* /*state*/, GameValuePar arg)
@@ -380,8 +380,17 @@ GameValue TriClickAt(const GameState* /*state*/, GameValuePar arg)
     float x = control->X() + control->W() * u;
     float y = control->Y() + control->H() * v;
     LOG_INFO(Core, "[tri] triClickAt IDC={} at ({},{})", idc, x, y);
-    control->OnLButtonDown(x, y);
-    control->OnLButtonUp(x, y);
+    const bool right = a.Size() > 3 && float(GameScalarType(a[3])) == 1.0f;
+    if (right)
+    {
+        control->OnRButtonDown(x, y);
+        control->OnRButtonUp(x, y);
+    }
+    else
+    {
+        control->OnLButtonDown(x, y);
+        control->OnLButtonUp(x, y);
+    }
     return GameValue(true);
 }
 
@@ -1509,6 +1518,17 @@ GameValue TriMissionPlayerReady(const GameState* /*state*/)
     auto* display = GetActiveDisplayForSQF();
     int idd = display ? display->IDD() : -1;
 
+    // A mission-owned command dialog can cover an already running mission.
+    // Check its underlying gameplay display; retain every player/frame gate below.
+    if (GWorld->GetUserDlg() && GWorld->GetMode() == GModeArcade && idd != 46)
+    {
+        auto* mission = dynamic_cast<ControlsContainer*>(GWorld->GetOptions());
+        while (mission && mission->Child())
+            mission = mission->Child();
+        if (mission && mission->IDD() == 46)
+            idd = 46;
+    }
+
     // Intro-only missions (cutscenes) boot to DisplayIntro (IDD 47) and have no
     // player. Readiness for them means the intro display is up and a couple of
     // frames have rendered, so the harness can drive / screenshot the cutscene.
@@ -2248,7 +2268,33 @@ GameValue TriIsWindowed(const GameState* /*state*/)
     return GameValue(GEngine->IsWindowed() ? "OK:windowed" : "OK:fullscreen");
 }
 
-/// triGetWindowSize — return the engine's current render size as "WxH".
+/// triGetControlRect — physical viewport bounds, independent of the logical UI band.
+GameValue TriGetControlRect(const GameState* state, GameValuePar arg)
+{
+    GameValue result = state->CreateGameValue(GameArray);
+    auto* display = GetActiveDisplayForSQF();
+    if (!display || !GEngine || GEngine->Width() <= 0 || GEngine->Height() <= 0)
+        return result;
+    const int idc = int(GameScalarType(arg));
+    if (!display->GetCtrl(idc))
+    {
+        if (auto* owner = UIActiveDisplay::FindContainerWithIdc(GWorld, idc))
+            display = owner;
+    }
+    auto* control = dynamic_cast<Control*>(display->GetCtrl(idc));
+    if (!control)
+        return result;
+    Point2DAbs position;
+    GEngine->Convert(position, Point2DFloat(control->X(), control->Y()));
+    GameArrayType& bounds = result;
+    bounds.Add(position.x / GEngine->Width());
+    bounds.Add(position.y / GEngine->Height());
+    bounds.Add(control->W() * GEngine->Width2D() / GEngine->Width());
+    bounds.Add(control->H() * GEngine->Height2D() / GEngine->Height());
+    return result;
+}
+
+/// triGetWindowSize — current render size as "WxH".
 GameValue TriGetWindowSize(const GameState* /*state*/)
 {
     if (!GEngine)

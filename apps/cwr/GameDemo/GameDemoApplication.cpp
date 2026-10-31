@@ -6,6 +6,7 @@ void GameDemoApplication::RegisterGameModules()
 {
     // Demo ships Single Missions only; unregistered modules stay disabled in the main menu.
     Poseidon::MissionsModule::Register();
+    RegisterRTSModule();
     // Poseidon::CampaignsModule::Register();
     // Poseidon::MultiplayerModule::Register();
     // Poseidon::EditorModule::Register();

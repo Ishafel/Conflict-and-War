@@ -780,11 +780,6 @@ static GameValue StringIgnore(const GameState* state, GameValuePar oper1)
     return NOTHING;
 }
 
-// Thread-local storage for the value passed to exitWith { expr }.
-// Set by StringExitWith when the condition is true; read and cleared
-// by loop handlers (ForDoOp, StringRepeat) to propagate the exit value.
-static thread_local GameValue tls_exitWithValue;
-
 static GameValue StringRepeat(const GameState* state, GameValuePar oper1, GameValuePar oper2)
 {
     int maxIters = 10000;
@@ -803,7 +798,13 @@ static GameValue StringRepeat(const GameState* state, GameValuePar oper1, GameVa
             RString expression = oper1;
 
             GameValue value = state->EvaluateMultiple(expression);
+            const EvalError error = state->GetLastError();
             bool test = false;
+            if (error != EvalOK)
+            {
+                state->EndContext();
+                return error == EvalBreak ? value : NOTHING;
+            }
             if (value.GetType() & GameBool)
             {
                 test = bool(value);
@@ -814,7 +815,7 @@ static GameValue StringRepeat(const GameState* state, GameValuePar oper1, GameVa
             }
 
             state->EndContext();
-            if (!test)
+            if (!test || state->GetLastError() != EvalOK)
             {
                 break;
             }
@@ -824,14 +825,11 @@ static GameValue StringRepeat(const GameState* state, GameValuePar oper1, GameVa
             GameVarSpace local(state->GetContext());
             state->BeginContext(&local);
             RString expression = oper2;
-            const_cast<GameState*>(state)->Execute(expression);
+            GameValue value = state->EvaluateMultiple(expression);
+            const EvalError error = state->GetLastError();
             state->EndContext();
-        }
-        if (state->GetLastError() == EvalBreak)
-        {
-            GameValue exitVal = tls_exitWithValue;
-            const_cast<GameState*>(state)->SetError(EvalOK);
-            return exitVal;
+            if (error != EvalOK)
+                return error == EvalBreak ? value : NOTHING;
         }
     }
     return NOTHING;
@@ -874,12 +872,8 @@ static GameValue StringThen(const GameState* state, GameValuePar oper1, GameValu
     return NOTHING;
 }
 
-// if (cond) exitWith { code } — evaluates code when cond is true, stores the
-// value in tls_exitWithValue, and signals EvalBreak to stop further statement
-// execution in the current scope.  Loop handlers (ForDoOp, StringRepeat) catch
-// EvalBreak, clear it, and use tls_exitWithValue as the loop's return value.
-// At top level (no enclosing loop), EvaluateMultiple captures the value when
-// it sees EvalBreak so the tri runner still receives "FAIL:..." strings.
+// The exit result belongs to the current context. EndContext consumes the
+// control signal at a call/then boundary; loops inspect it before closing theirs.
 static GameValue StringExitWith(const GameState* state, GameValuePar oper1, GameValuePar oper2)
 {
     bool test = oper1;
@@ -890,8 +884,9 @@ static GameValue StringExitWith(const GameState* state, GameValuePar oper1, Game
         RString expression = oper2;
         GameValue ret = state->EvaluateMultiple(expression);
         state->EndContext();
-        tls_exitWithValue = ret;
-        const_cast<GameState*>(state)->SetError(EvalBreak);
+        if (state->GetLastError() != EvalOK)
+            return NOTHING;
+        state->SignalExit(ret);
         return ret;
     }
     return NOTHING;
@@ -954,15 +949,15 @@ static GameValue ForDoOp(const GameState* state, GameValuePar oper1, GameValuePa
         GameVarSpace local(state->GetContext());
         state->BeginContext(&local);
         state->VarSetLocal(toData->GetVar(), GameValue(i));
-        const_cast<GameState*>(state)->Execute(body);
+        GameValue value = state->EvaluateMultiple(body);
+        const EvalError error = state->GetLastError();
         state->EndContext();
-        if (state->GetLastError() == EvalBreak)
+        if (error == EvalBreak)
         {
-            exitVal = tls_exitWithValue;
-            const_cast<GameState*>(state)->SetError(EvalOK);
+            exitVal = value;
             break;
         }
-        if (state->GetLastError() != EvalOK)
+        if (error != EvalOK)
             break;
     }
     return exitVal;
@@ -2089,7 +2084,14 @@ bool GameDataArray::IsEqualTo(const GameData* data) const
     {
         return false;
     }
-    return false;
+    // Script array mutation rejects cycles; nested values use the same leaf
+    // equality rules, including undefined values that are never equal.
+    for (int i = 0; i < val1.Size(); ++i)
+    {
+        if (!val1[i].IsEqualTo(val2[i]))
+            return false;
+    }
+    return true;
 }
 
 #ifndef ACCESS_ONLY
@@ -2741,9 +2743,6 @@ GameValue GameState::EvaluateMultiple(const char* expression, bool localOnly) co
             CleanStack();
             if (_e->_error)
             {
-                // exitWith propagates its value even when breaking
-                if (_e->_error == EvalBreak)
-                    ret = value;
                 break;
             }
 
@@ -2765,6 +2764,10 @@ GameValue GameState::EvaluateMultiple(const char* expression, bool localOnly) co
         }
         _e->_pos++;
     }
+    // Vyhod and assignment parsing may return NOTHING on control flow. Preserve
+    // the context's result independently of that parser return path.
+    if (_e->_error == EvalBreak)
+        ret = _e->_exitValue;
     ShowError();
     // _pos / _pos0 / _subexpBeg / _subexpEnd are restored by frameGuard on scope exit.
     return ret;
@@ -3059,9 +3062,26 @@ void GameState::EndContext() const
         Poseidon::Foundation::ErrorMessage("GameState context stack underflow");
         return;
     }
+    const EvalError error = _e->_error;
+    const RString errorText = _e->_errorText;
+    const int errorPosition = _e->_errorCarretPos;
     _contextStack[_actContext].Free();
     _actContext--;
     _e = _contextStack[_actContext];
+    // A child code scope owns its early return, but genuine failures must not
+    // disappear when its variable/parser context is destroyed.
+    if (error != EvalOK && error != EvalBreak)
+    {
+        _e->_error = error;
+        _e->_errorText = errorText;
+        _e->_errorCarretPos = errorPosition;
+    }
+}
+
+void GameState::SignalExit(GameValuePar value) const
+{
+    _e->_exitValue = value;
+    _e->_error = EvalBreak;
 }
 
 bool GameState::CheckEvaluate(const char* expression) const

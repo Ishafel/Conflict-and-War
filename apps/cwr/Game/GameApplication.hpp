@@ -70,6 +70,7 @@ class GameApplication : public GameBase
     // game world (Tetris) override to a no-op.
     virtual bool InitializeWorld();
     virtual void RegisterGraphicsBackends();
+    void RegisterRTSModule();
 
     void RegisterAudioBackends() override;
     virtual bool InitializeSound();

@@ -15,6 +15,57 @@ namespace
 {
 char g_crashDir[MAX_PATH] = {}; // where to write the minidump; empty = beside the exe
 
+struct DumpRequest
+{
+    const char* path;
+    MINIDUMP_EXCEPTION_INFORMATION exception;
+};
+
+DWORD WINAPI WriteCrashDump(void* argument)
+{
+    auto& request = *static_cast<DumpRequest*>(argument);
+    HANDLE proc = GetCurrentProcess();
+    HANDLE file = CreateFileA(request.path, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
+    if (file == INVALID_HANDLE_VALUE)
+    {
+        fprintf(stderr, "  minidump failed: %s (error 0x%08lX)\n", request.path, GetLastError());
+        return 1;
+    }
+
+    BOOL written = MiniDumpWriteDump(proc, GetCurrentProcessId(), file, MiniDumpWithDataSegs, &request.exception,
+                                     nullptr, nullptr);
+    DWORD error = written ? ERROR_SUCCESS : GetLastError();
+    bool normalDump = false;
+    if (!written)
+    {
+        fprintf(stderr, "  minidump with data segments failed (error 0x%08lX, context flags 0x%08lX)\n", error,
+                request.exception.ExceptionPointers->ContextRecord->ContextFlags);
+        LARGE_INTEGER start = {};
+        if (SetFilePointerEx(file, start, nullptr, FILE_BEGIN) && SetEndOfFile(file))
+        {
+            written = MiniDumpWriteDump(proc, GetCurrentProcessId(), file, MiniDumpNormal, &request.exception, nullptr,
+                                        nullptr);
+            error = written ? ERROR_SUCCESS : GetLastError();
+            normalDump = written;
+        }
+        else
+        {
+            error = GetLastError();
+        }
+    }
+    CloseHandle(file);
+    if (written)
+    {
+        fprintf(stderr, "  minidump: %s%s\n", request.path, normalDump ? " (without data segments)" : "");
+    }
+    else
+    {
+        DeleteFileA(request.path);
+        fprintf(stderr, "  minidump failed: %s (error 0x%08lX)\n", request.path, error);
+    }
+    return written ? 0 : 1;
+}
+
 LONG WINAPI CrashFilter(EXCEPTION_POINTERS* ep)
 {
     static bool reentered = false;
@@ -41,41 +92,28 @@ LONG WINAPI CrashFilter(EXCEPTION_POINTERS* ep)
 
     char dmp[MAX_PATH];
     snprintf(dmp, sizeof(dmp), "%s\\crash-%lu.dmp", dir, GetCurrentProcessId());
-    HANDLE f = CreateFileA(dmp, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, 0, nullptr);
-    if (f != INVALID_HANDLE_VALUE)
+    // DbgHelp recommends a separate writer thread when an external crash reporter
+    // is unavailable. Keep the faulting thread and its original exception memory
+    // alive while the worker writes; never substitute the worker's CPU context.
+    DumpRequest request = {dmp, {GetCurrentThreadId(), ep, FALSE}};
+    HANDLE writer = CreateThread(nullptr, 0, WriteCrashDump, &request, 0, nullptr);
+    if (writer)
     {
-        MINIDUMP_EXCEPTION_INFORMATION mei = {GetCurrentThreadId(), ep, FALSE};
-        BOOL written = MiniDumpWriteDump(proc, GetCurrentProcessId(), f, MiniDumpWithDataSegs, &mei, nullptr, nullptr);
-        DWORD error = written ? ERROR_SUCCESS : GetLastError();
-        bool normalDump = false;
-        if (!written)
+        // Joining also serializes the subsequent DbgHelp stack walk. The handler
+        // must not return while the worker still references this stack frame.
+        DWORD wait = WaitForSingleObject(writer, INFINITE);
+        DWORD waitError = wait == WAIT_OBJECT_0 ? ERROR_SUCCESS : GetLastError();
+        CloseHandle(writer);
+        if (wait != WAIT_OBJECT_0)
         {
-            LARGE_INTEGER start = {};
-            if (SetFilePointerEx(f, start, nullptr, FILE_BEGIN) && SetEndOfFile(f))
-            {
-                written = MiniDumpWriteDump(proc, GetCurrentProcessId(), f, MiniDumpNormal, &mei, nullptr, nullptr);
-                error = written ? ERROR_SUCCESS : GetLastError();
-                normalDump = written;
-            }
-            else
-            {
-                error = GetLastError();
-            }
-        }
-        CloseHandle(f);
-        if (written)
-        {
-            fprintf(stderr, "  minidump: %s%s\n", dmp, normalDump ? " (without data segments)" : "");
-        }
-        else
-        {
-            DeleteFileA(dmp);
-            fprintf(stderr, "  minidump failed: %s (error 0x%08lX)\n", dmp, error);
+            fprintf(stderr, "  minidump worker wait failed (error 0x%08lX)\n", waitError);
+            TerminateProcess(proc, ep->ExceptionRecord->ExceptionCode);
+            return EXCEPTION_EXECUTE_HANDLER;
         }
     }
     else
     {
-        fprintf(stderr, "  minidump failed: %s (error 0x%08lX)\n", dmp, GetLastError());
+        fprintf(stderr, "  minidump worker creation failed (error 0x%08lX)\n", GetLastError());
     }
 
     DWORD code = ep->ExceptionRecord->ExceptionCode;

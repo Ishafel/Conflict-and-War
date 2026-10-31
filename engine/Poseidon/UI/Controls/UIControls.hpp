@@ -2,6 +2,7 @@
 
 #include <Poseidon/UI/Controls/UIControlsBase.hpp>
 #include <Poseidon/UI/Controls/UIControlsWidgets.hpp>
+#include <Poseidon/UI/Settings/PresentationRects.hpp>
 
 class MsgBox;
 
@@ -57,6 +58,9 @@ protected:
 	RefArray<Control> _controlsBackground;
 	RefArray<ControlObject> _objects;
 	RefArray<Control> _controlsForeground;
+    bool _fullViewport = false;
+    Poseidon::Presentation::Rect _layoutUiRect;
+    void UpdateFullViewportLayout();
 	ControlId _indexFocused;
 	ControlId _indexLCaptured;
 	ControlId _indexRCaptured;

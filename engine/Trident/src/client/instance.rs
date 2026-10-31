@@ -528,12 +528,13 @@ mod tests {
     #[cfg(unix)]
     #[tokio::test]
     async fn kill_on_drop_reaps_spawned_process() {
-        let child = Command::new("sleep")
+        let mut child = Command::new("sleep")
             .arg("300")
             .kill_on_drop(true)
             .spawn()
             .expect("spawn sleep");
         let pid = child.id().expect("child pid");
+        assert!(child.try_wait().expect("query child status").is_none());
         assert!(process_running(pid), "sleep should be running after spawn");
 
         drop(child);
@@ -549,18 +550,40 @@ mod tests {
 
     #[cfg(unix)]
     fn process_running(pid: u32) -> bool {
-        // Reads /proc/<pid>/stat and treats a missing file (reaped) or 'Z'
-        // (zombie) as no longer running; comm can contain ')' so split on the last.
-        match std::fs::read_to_string(format!("/proc/{pid}/stat")) {
-            Ok(stat) => {
-                let state = stat
-                    .rsplit(')')
-                    .next()
-                    .and_then(|rest| rest.split_whitespace().next())
-                    .and_then(|token| token.chars().next());
-                state != Some('Z')
-            }
-            Err(_) => false,
+        // ps exists on both macOS and Linux; /proc is Linux-only. A zombie
+        // has terminated even if the runtime has not reaped it yet.
+        let output = std::process::Command::new("ps")
+            .args(["-o", "stat=", "-p", &pid.to_string()])
+            .output()
+            .expect("query process state with ps");
+        if output.status.success() {
+            let state = String::from_utf8(output.stdout).expect("ps state is UTF-8");
+            return active_process_state(&state);
         }
+        assert!(
+            output.status.code() == Some(1) && output.stdout.is_empty() && output.stderr.is_empty(),
+            "ps failed: {:?}: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stderr)
+        );
+        false
+    }
+
+    #[cfg(unix)]
+    fn active_process_state(state: &str) -> bool {
+        match state.trim().chars().next() {
+            Some('Z') => false,
+            Some('R' | 'S' | 'I' | 'T' | 'D' | 'U') => true,
+            other => panic!("unexpected ps process state: {other:?}"),
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn process_state_distinguishes_live_and_zombie() {
+        for state in ["S", " S+\n", "R", "I", "T", "D", "U"] {
+            assert!(active_process_state(state));
+        }
+        assert!(!active_process_state(" Z+\n"));
     }
 }

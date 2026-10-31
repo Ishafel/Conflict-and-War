@@ -583,6 +583,30 @@ GameValue GetNearestObjectByDistance(const GameState* state, GameValuePar oper1)
     return nearestObject(pos, typeName, static_cast<float>(array[2]));
 }
 
+// FR-011: test the candidate's full geometry, not distances between object origins.
+GameValue ObjHideObject(const GameState*, GameValuePar value, GameValuePar hidden)
+{
+    if (Object* object = GetObject(value))
+        object->HideObject(hidden);
+    return NOTHING;
+}
+
+GameValue ObjIsHidden(const GameState*, GameValuePar value)
+{
+    Object* object = GetObject(value);
+    return GameValue(object && object->IsObjectHidden());
+}
+
+GameValue ObjectPlacementClear(const GameState* state, GameValuePar value)
+{
+    Object* object = GetObject(value);
+    if (!object || !GLandscape || !object->GetShape() || !object->GetShape()->GeometryLevel())
+        return GameValue(false); // Missing geometry cannot establish a safe placement.
+    CollisionBuffer collisions;
+    GLandscape->ObjectCollision(collisions, object, *object);
+    return GameValue(collisions.Size() == 0);
+}
+
 GameValue StrSub(const GameState* state, GameValuePar oper1)
 {
     const GameArrayType& array = oper1;

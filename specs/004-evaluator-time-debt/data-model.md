@@ -1,0 +1,3 @@
+# Data model
+GameEvaluator context: existing parser/variables/error fields plus GameValue exit result. SignalExit sets value and EvalBreak only after successful exit-body evaluation. EvaluateMultiple returns the value even from an assignment. EndContext consumes child break by restoring parent; genuine child error/text/caret survive into parent. Loop handlers snapshot body status/result before destroying the context and stop on direct break/error.
+Timer samples retain before/value/after. Benchmark runs comprise build/platform/compiler metadata, operation and Catch2 samples/statistics; no performance verdict threshold.

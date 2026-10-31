@@ -51,6 +51,7 @@ set(POSEIDON_CORE_TEST_SOURCES
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Poseidon/Network/test_net_transport_termination.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Poseidon/Network/test_net_server_teardown.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_complex.cpp
+    ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_array_equality.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_data.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_edge.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_functions.cpp
@@ -58,6 +59,7 @@ set(POSEIDON_CORE_TEST_SOURCES
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_nulars.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_operators.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_reentrancy.cpp
+    ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_scope_exit.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_script_integration.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_simple.cpp
     ${CMAKE_SOURCE_DIR}/tests/unit/engine/Evaluator/test_evaluator_state_vars.cpp
@@ -323,6 +325,7 @@ list(APPEND POSEIDON_TEST_SOURCES
     UI/Settings/test_aspectRatio.cpp
     UI/Settings/test_presentation.cpp
     UI/Settings/test_presentationRects.cpp
+    UI/Controls/test_full_viewport_layout.cpp
     UI/Settings/test_presentation_single_entry.cpp
     UI/Settings/test_audioConfig.cpp
     UI/Settings/test_controlsConfig.cpp
@@ -480,6 +483,7 @@ list(APPEND POSEIDON_TEST_SOURCES
     UI/test_mouse_page.cpp
     UI/test_mp_version_message_localization.cpp
     UI/test_main_menu_layout.cpp
+    UI/test_rts_projection.cpp
     UI/test_notebook_theme.cpp
     UI/test_optionsUI.cpp
     UI/test_addon_content.cpp

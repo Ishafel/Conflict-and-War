@@ -1,3 +1,4 @@
+#include <Poseidon/Graphics/Rendering/WholeObjectBlend.hpp>
 #include <string.h>
 #include <cmath>
 #include <Poseidon/Foundation/Common/FltOpts.hpp>
@@ -1492,7 +1493,8 @@ void ShapeSection::PrepareTL(const TLMaterial& mat, const LightList& lights, int
         GEngine->SetMaterial(mat, lights, specTyped);
     }
     constexpr int inheritedFlags = NoDropdown | FogDisabled | DisableSun | IsColored;
-    properties.PrepareTL(properties.GetTexture(), properties.Special() | (spec & inheritedFlags));
+    properties.PrepareTL(properties.GetTexture(),
+        render::InheritWholeObjectBlend(properties.Special() | (spec & inheritedFlags),spec));
 }
 
 void Shape::FindSections(bool forceMaterial0)

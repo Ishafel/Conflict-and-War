@@ -1,3 +1,4 @@
+#include <Poseidon/Graphics/Rendering/WholeObjectBlend.hpp>
 #include <Poseidon/Core/Application.hpp>
 #include <Poseidon/Core/Global.hpp>
 #include <Poseidon/World/Scene/Scene.hpp>
@@ -202,6 +203,7 @@ Poly* FaceArray::AddNoClip(const Poly& face, TLVertexTable& tlMesh, Scene& scene
 void FaceArray::Draw(const IAnimator* matSource, TLVertexTable& tlTable, const LightList& lights, const Shape& mesh,
                      ClipFlags clipFlags, int spec, const Matrix4& invTransform) const
 {
+    const int objectSpec=spec;
     DoAssert(_sections.Size() == 0 || _sections[_sections.Size() - 1].end == End());
     Engine* engine = GEngine;
     if ((spec & OnSurface) == 0)
@@ -268,7 +270,7 @@ void FaceArray::Draw(const IAnimator* matSource, TLVertexTable& tlTable, const L
             {
                 texture = nullptr;
             }
-            int spec = sec.properties.Special();
+            int spec = render::InheritWholeObjectBlend(sec.properties.Special(), objectSpec);
             if (spec & (IsHidden | IsHiddenProxy))
             {
                 continue;

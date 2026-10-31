@@ -21,14 +21,15 @@ jobs:
             preset: win-x64-clang-rwdi
           - os: macos-15
             preset: macos-arm64-clang-rwdi
-          - os: macos-15-intel
-            preset: macos-x64-clang-rwdi
     env:
       VCPKG_ROOT: ${{ github.workspace }}/build/vcpkg
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Developer environment import regression
+        shell: pwsh
+        run: ./tests/scripts/test_windows_build_environment.ps1
       - name: Windows build and tests (same pipeline as local development)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -36,12 +37,14 @@ jobs:
       - name: Install macOS build tools
         if: runner.os == 'macOS'
         run: brew install ninja ccache llvm
-      - name: Select macOS LLVM tools
+      - name: Select SDK-matched macOS Clang
         if: runner.os == 'macOS'
         run: |
           echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
-          echo "CC=$(brew --prefix llvm)/bin/clang" >> "$GITHUB_ENV"
-          echo "CXX=$(brew --prefix llvm)/bin/clang++" >> "$GITHUB_ENV"
+          echo "CC=$(xcrun --find clang)" >> "$GITHUB_ENV"
+          echo "CXX=$(xcrun --find clang++)" >> "$GITHUB_ENV"
+          echo "SDKROOT=$(xcrun --show-sdk-path)" >> "$GITHUB_ENV"
+          xcrun clang --version
       - name: Bootstrap pinned vcpkg
         if: runner.os == 'macOS'
         shell: pwsh
@@ -64,9 +67,44 @@ jobs:
       - name: Foundation tests without game data
         if: runner.os == 'macOS'
         run: ctest --preset ${{ matrix.preset }}
+      - name: RTS projection and boolean regression tests without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure -R "^PoseidonTests - (RTS (ray|drag|production|whole|camera)|tri assertions distinguish)"
+      - name: Evaluator scope exit regressions without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure --no-tests=error -R "^PoseidonCoreTests - Evaluator scope exit"
+      - name: Evaluator array value equality regressions without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure --no-tests=error -R "^PoseidonCoreTests - Array value equality"
+      - name: C&W viewport layout and array assertion regressions without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure --no-tests=error -R "^PoseidonTests - (Full viewport|Ordinary dialogs|tri assertions compare array|tri array assertion)"
+      - name: Measure timer operation costs separately from correctness
+        shell: pwsh
+        run: |
+          $benchmark = "build/${{ matrix.preset }}/tests/benchmarks/PoseidonTimeBenchmarks"
+          if ($IsWindows) { $benchmark += '.exe' }
+          & $benchmark --benchmark-samples 50 --benchmark-resamples 1000 *> "build/${{ matrix.preset }}/potime-benchmark.log"
+          $benchmarkResult = $LASTEXITCODE
+          Get-Content "build/${{ matrix.preset }}/potime-benchmark.log"
+          exit $benchmarkResult
+      - name: Preserve timer benchmark measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: potime-benchmark-${{ matrix.preset }}
+          path: build/${{ matrix.preset }}/potime-benchmark.log
+          if-no-files-found: ignore
       - name: Compile Rust workspace
         if: runner.os == 'macOS'
         run: cargo build --workspace --locked
       - name: Test Rust workspace
         if: runner.os == 'macOS'
         run: cargo test --workspace --locked
+      - name: Preserve build failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs-${{ matrix.preset }}
+          path: |
+            build/logs/*.log
+            build/${{ matrix.preset }}/vcpkg-manifest-install.log
+            build/${{ matrix.preset }}/CMakeFiles/CMakeConfigureLog.yaml
+            build/${{ matrix.preset }}/Testing/Temporary/LastTest.log
+            build/vcpkg/buildtrees/*/*.log

@@ -398,6 +398,7 @@ GameValue DayTime(const GameState* state);
 GameValue EnableEndDialog(const GameState* state);
 GameValue EndGame(const GameState* state);
 GameValue ForceEnd(const GameState* state);
+GameValue EndMission(const GameState* state, GameValuePar ending);
 GameValue GameTime(const GameState* state);
 GameValue GetAcceleratedTime(const GameState* state);
 GameValue GetMusicVolume(const GameState* state);
@@ -459,6 +460,9 @@ GameValue CtrlEnable(const GameState* state, GameValuePar oper1);
 GameValue CtrlEnabled(const GameState* state, GameValuePar oper1);
 GameValue CtrlGetText(const GameState* state, GameValuePar oper1);
 GameValue CtrlSetText(const GameState* state, GameValuePar oper1);
+GameValue CtrlIsHovered(const GameState*, GameValuePar);
+GameValue CtrlMapCenter(const GameState*, GameValuePar);
+GameValue CtrlMapGetCenter(const GameState*, GameValuePar);
 GameValue CtrlShow(const GameState* state, GameValuePar oper1);
 GameValue CtrlVisible(const GameState* state, GameValuePar oper1);
 GameValue CutObj(const GameState* state, GameValuePar oper1);
@@ -480,6 +484,9 @@ GameValue GameTitleText(const GameState* state, GameValuePar oper1);
 GameValue GetLaserTarget(const GameState* state, GameValuePar oper1);
 GameValue GetNearestObject(const GameState* state, GameValuePar oper1);
 GameValue GetNearestObjectByDistance(const GameState* state, GameValuePar oper1);
+GameValue ObjectPlacementClear(const GameState* state, GameValuePar object);
+GameValue ObjHideObject(const GameState*, GameValuePar, GameValuePar);
+GameValue ObjIsHidden(const GameState*, GameValuePar);
 GameValue GetNetIdObj(const GameState* state, GameValuePar oper1);
 GameValue GetNetworkId(const GameState* state, GameValuePar oper1);
 GameValue GetObjFromNetId(const GameState* state, GameValuePar oper1);
@@ -1035,6 +1042,7 @@ static const GameFunction* GetExtUnary(int& count)
         GameFunction(GameNothing, "enableRadio", EnableRadio, GameBool),
 
         GameFunction(GameNothing, "showCinemaBorder", ShowCinemaBorder, GameBool),
+        GameFunction(GameNothing, "endMission", EndMission, GameString),
         GameFunction(GameNothing, "disableUserInput", DisableUserInput, GameBool),
         GameFunction(GameNothing, "loadMission", LoadMission, GameString),
         GameFunction(GameNothing, "onPlayerConnected", OnPlayerConnected, GameString),
@@ -1085,6 +1093,9 @@ static const GameFunction* GetExtUnary(int& count)
 
         GameFunction(GameString, "ctrlText", CtrlGetText, GameScalar),
         GameFunction(GameNothing, "ctrlSetText", CtrlSetText, GameArray),
+        GameFunction(GameBool, "ctrlIsHovered", CtrlIsHovered, GameScalar),
+        GameFunction(GameNothing, "ctrlMapCenter", CtrlMapCenter, GameArray),
+        GameFunction(GameArray, "ctrlMapGetCenter", CtrlMapGetCenter, GameScalar),
 
         GameFunction(GameString, "buttonAction", ButtonGetAction, GameScalar),
         GameFunction(GameNothing, "buttonSetAction", ButtonSetAction, GameArray),
@@ -1202,6 +1213,8 @@ static const GameFunction* GetExtUnary(int& count)
         GameFunction(GameObject, "laserTarget", GetLaserTarget, GameObject),
         GameFunction(GameScalar, "getMass", ObjGetMass, GameObject),
         GameFunction(GameObject, "NearestObjectDistance", GetNearestObjectByDistance, GameArray),
+        GameFunction(GameBool, "objectPlacementClear", ObjectPlacementClear, GameObject),
+        GameFunction(GameBool, "isObjectHidden", ObjIsHidden, GameObject),
         GameFunction(GameString, "substr", StrSub, GameArray),
         GameFunction(GameScalar, "sizeofstr", StrSize, GameString),
         // todo: add more parameters and adjust parameters to make some of them has default value
@@ -1243,6 +1256,7 @@ static const GameOperator* GetExtBinary(int& count)
         GameOperator(GameNothing, "allowDammage", function, ObjAllowDammage, GameObject, GameBool),
         // Grammatically-correct one-M alias resolves to the same handler (cf. setDammage/setDamage).
         GameOperator(GameNothing, "allowDamage", function, ObjAllowDammage, GameObject, GameBool),
+        GameOperator(GameNothing, "hideObject", function, ObjHideObject, GameObject, GameBool),
         GameOperator(GameNothing, "flyInHeight", function, ObjSetFlyingHeight, GameObject, GameScalar),
         GameOperator(GameNothing, "setMarkerPos", function, MarkerSetPos, GameString, GameArray),
         GameOperator(GameNothing, "setMarkerType", function, MarkerSetType, GameString, GameString),

@@ -793,6 +793,9 @@ DEFINE_FAST_ALLOCATOR(SortObject)
 
 void Scene::ObjectForDrawing(Object* obj, int forceLOD, ClipFlags clip)
 {
+    // FR-024: omit the entire object, including its shadow/proxies, from this frame.
+    if (obj->IsObjectHidden())
+        return;
     LODShapeWithShadow* shape = obj->GetShapeOnPos(obj->Position());
 
     // some objects may be trivially clipped

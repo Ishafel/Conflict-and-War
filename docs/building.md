@@ -1,8 +1,13 @@
 # Сборка Conflict & War
 
-Цели: Windows x64, macOS arm64 (Apple Silicon) и macOS x86_64 (Intel).
+Обязательные цели: Windows x64 и macOS arm64 (Apple Silicon).
 Собирать нативно на соответствующей ОС и архитектуре. Windows x64 сборка и тесты подтверждены в [отчёте](../specs/002-windows-build-pipeline/verification.md).
-Нативные macOS прогоны пока не подтверждены.
+Нативная macOS arm64 сборка, Foundation/Rust tests и игровой прогон Everon подтверждены
+в [отчёте сборки](../specs/001-project-foundation/verification.md#нативная-macos-arm64--2026-10-31)
+и [отчёте игрового прогона](../specs/003-everon-rts-slice/verification.md).
+Проверка macOS x86_64 (Intel) исключена из обязательной приёмки и CI решением
+владельца от 2026-10-31 из-за отсутствия доступного хоста. Intel presets сохранены
+для необязательного использования; это не подтверждает работоспособность Intel.
 
 ## Инструменты
 
@@ -68,6 +73,8 @@ PCH-компиляции используют инкрементальный Nin
 Явный неверный LLVM_ROOT считается ошибкой. Внешний VCPKG_ROOT должен быть
 на baseline из vcpkg.json; сценарий не выполняет reset/clean или автоматическое
 переключение существующего checkout. Это защищает локальные изменения.
+Импорт окружения Visual Studio сохраняет заданный VCPKG_ROOT; встроенная копия
+vcpkg из VS не заменяет зафиксированный checkout проекта.
 При обновлении baseline сначала явно подготовьте соответствующий checkout
 либо выберите новый каталог VCPKG_ROOT.
 
@@ -80,10 +87,11 @@ PCH-компиляции используют инкрементальный Nin
 Git LFS и инструменты через Homebrew:
 
 ```sh
-brew install cmake ninja ccache llvm git-lfs
-export PATH="$(brew --prefix llvm)/bin:$PATH"
-export CC="$(brew --prefix llvm)/bin/clang"
-export CXX="$(brew --prefix llvm)/bin/clang++"
+brew install cmake ninja ccache clang-format git-lfs pkgconf autoconf automake libtool
+export PATH="$(brew --prefix)/bin:$PATH"
+export CC="$(xcrun --find clang)"
+export CXX="$(xcrun --find clang++)"
+export SDKROOT="$(xcrun --show-sdk-path)"
 git lfs install
 git lfs pull
 
@@ -93,7 +101,7 @@ git -C build/vcpkg checkout "$baseline"
 ./build/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 export VCPKG_ROOT="$PWD/build/vcpkg"
 
-# Apple Silicon; на Intel заменить arm64 на x64 в трёх командах.
+# Обязательная macOS-платформа: Apple Silicon.
 cmake --preset macos-arm64-clang-rwdi
 cmake --build --preset macos-arm64-clang-rwdi --parallel 3
 ctest --preset macos-arm64-clang-rwdi
@@ -103,7 +111,13 @@ cargo test --workspace --locked
 
 При ошибке остановиться и устранить её до следующего шага. Debug presets называются
 `macos-arm64-clang` / `macos-x64-clang`, Release — с суффиксом `-rel`.
-ARM и Intel проверяются раздельно; universal binary пока не создаётся.
+
+На macOS проект и зависимости используют Clang из активного Xcode, согласованный
+с его SDK. Отдельный пакет Homebrew clang-format предоставляет форматтер. Это исключает случайную
+подмену SDK-компилятора новой основной версией Homebrew LLVM. Baseline vcpkg
+не меняется; overlay enkiTS явно подключает type_traits, используемый upstream.
+Intel presets с заменой arm64 на x64 доступны для необязательных прогонов;
+они не входят в текущую приёмку. Universal binary пока не создаётся.
 
 ## Результаты и проверки
 
@@ -134,7 +148,7 @@ Test presets намеренно запускают только `PoseidonFoundat
 [Workflow](../.github/workflows/build.yml) вызывает на Windows ту же build.cmd → scripts/windows-build.ps1.
 На macOS сохраняются отдельные configure, все C++ targets,
 Foundation CTest, сборку и тесты Rust workspace. Нативные runners: Windows 2022,
-macOS 15 arm64 и macOS 15 Intel; соответствие меток проверено по
+macOS 15 arm64; соответствие меток проверено по
 [официальному списку GitHub](https://github.com/actions/runner-images).
 Workflow не публикует binaries и не выполняет деплой. Запуск произойдёт после
 попадания изменения в GitHub либо через `workflow_dispatch`; локальное добавление

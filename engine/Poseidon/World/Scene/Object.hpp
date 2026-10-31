@@ -244,6 +244,7 @@ class Object: public NetworkObject, public FrameBase, public IAnimator
 	bool _canSmoke:1; // object may smoke when destructed
 	bool _isDestroyed:1; // object is already destructed
 	bool _static:1; // object is static (never changing position)
+	bool _hidden = false; // local visual visibility; simulation ownership is unchanged
 
 	SRef<DammageRegions> _dammage; // dammage information
 
@@ -315,6 +316,8 @@ class Object: public NetworkObject, public FrameBase, public IAnimator
 	virtual bool LockPossible( const AmmoType *ammo ) const {return false;}
 
 	virtual bool Invisible() const;
+	void HideObject(bool hidden) { _hidden = hidden; }
+	bool IsObjectHidden() const { return _hidden; }
 	// Check if object should be tested for bullet intersection
 	virtual bool OcclusionFire() const;
 	// Check if object should be tested for line of sight intersection
