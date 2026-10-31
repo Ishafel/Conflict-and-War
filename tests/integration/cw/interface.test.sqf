@@ -1,5 +1,5 @@
 // FR-009/010 and SC-005: real viewport input, minimap isolation and 3D production.
-triSimUntil { (count CWR_RTS)==20 }
+triSimUntil { (count CWR_RTS)==27 }
 triSimUntil { dialog }
 triAssertEq [triGetCinemaBorder,false]
 triAssert [(triGetControlVisible 7301)]
@@ -13,7 +13,9 @@ triSimFrames 25
 triKeyUp 7
 triSimFrames 2
 triAssertGt [((CWR_RTS select 12) select 0)-(_focus select 0),0.2]
-triClick 7315
+triKeyDown 74
+triSimFrames 2
+triKeyUp 74
 triSimFrames 5
 triClick 7310
 triSimUntil { CWR_RTS select 18 }
@@ -31,7 +33,7 @@ triAssertEq [CWR_RTS select 0,2000]
 _site=[];
 {_dx=_x; {_p=[6519.04+_dx,6473.68+_x,0]; if ((count _site)==0) then {if ((_p call CWR_SiteError)=="") then {_site=+_p}}} forEach [-60,-40,-20,20,40,60]} forEach [-60,-40,-20,20,40,60];
 triAssertEq [count _site,3]
-CWR_RTS set [12,[(_site select 0)-12,(_site select 1)-12,0]]
+CWR_RTS set [12,[_site select 0,_site select 1,0]]
 call CWR_UpdateCamera
 triSimFrames 6
 triClick 7310
@@ -40,7 +42,7 @@ triSimFrames 6
 triAssertEq [count (CWR_RTS select 17),2]
 triAssert [(CWR_RTS select 17) select 1]
 _expected=+((CWR_RTS select 17) select 0)
-triClickAt [7301,0.6578947,0.5]
+triClickAt [7301,0.625,0.5]
 triAssert [!(isNull (CWR_RTS select 2))]
 triAssertLt [[getPos (CWR_RTS select 2),_expected] call CWR_Distance,0.1]
 triAssertEq [CWR_RTS select 0,2000]
@@ -56,10 +58,10 @@ triAssertEq [CWR_RTS select 0,1800]
 triSimUntil { (count (CWR_RTS select 5))==2 }
 _unit=(CWR_RTS select 5) select 0
 _p=getPos _unit
-CWR_RTS set [12,[(_p select 0)-12,(_p select 1)-12,0]]
+CWR_RTS set [12,[_p select 0,_p select 1,0]]
 call CWR_UpdateCamera
 triSimFrames 15
-triClickAt [7301,0.6578947,0.5]
+triClickAt [7301,0.625,0.5]
 triAssert [(CWR_RTS select 6)==_unit]
 triScreenshot "selected_infantry"
 _before=getPos (CWR_RTS select 6)

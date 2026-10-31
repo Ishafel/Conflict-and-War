@@ -7,14 +7,17 @@
 #include <Poseidon/UI/Controls/RTSProjection.hpp>
 #include <Evaluator/express.hpp>
 
-// Transparent, input-only 3D play area. Economy and orders belong to its script.
+// Transparent 3D play area and command feedback. Economy and orders belong to its script.
 class RTSViewport final : public CStatic
 {
     RString _click;
     RString _cameraInput;
     RString _cameraResetToken;
     std::optional<float> _lastCameraResetToken;
-    RString _selection;
+    RString _selection, _controlGroup, _moveFeedback, _healthUnits;
+    std::array<bool, 10> _digits{};
+    std::array<bool, 2> _control{};
+    RString _placementClassExpression, _previewModel, _resourceNodes;
     RString _units, _boxSelect, _placementActive, _placementValid, _placementClass, _previewClear;
     Ref<Poseidon::Object> _previewCandidate;
     Ref<Poseidon::ObjectColored> _ghost;
@@ -27,6 +30,10 @@ class RTSViewport final : public CStatic
     void Click(float x, float y, int button);
     void CameraInput(float panX, float panY, float zoom, bool home);
     void DrawSelection();
+    void DrawGroundRing(float x, float z, float radius, PackedColor color);
+    void DrawFeedback();
+    void DrawHealth();
+    void DrawResources();
     void UpdatePreview(float x, float y);
     bool TerrainHit(float x, float y, Vector3& hit, bool& sea);
     std::optional<Poseidon::RTS::ScreenRect> UnitRect(Poseidon::Object* unit) const;
@@ -36,6 +43,9 @@ class RTSViewport final : public CStatic
 
   public:
     RTSViewport(ControlsContainer* parent, int idc, const ParamEntry& cls);
+    std::optional<Poseidon::RTS::ScreenRect> ProjectedUnitRect(Poseidon::Object* unit) const { return UnitRect(unit); }
+    bool AcceptsCommandInput() const;
+    void ResetInput();
     void SetPos(float x, float y, float w, float h) override;
     void OnLButtonDown(float x, float y) override;
     void OnLButtonUp(float x, float y) override;

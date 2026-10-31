@@ -1,4 +1,5 @@
 #include <Poseidon/UI/Controls/RTSViewport.hpp>
+#include <Poseidon/UI/Controls/UIControls.hpp>
 #include <Poseidon/UI/Controls/RTSProjection.hpp>
 #include <Poseidon/World/World.hpp>
 #include <Poseidon/World/Scene/Scene.hpp>
@@ -54,6 +55,29 @@ int CameraKeyIndex(unsigned key)
 
 bool RTSViewport::OnKeyDown(unsigned key, unsigned, unsigned)
 {
+    const auto scan = SDL_GetScancodeFromKey(SDL_Keycode(key), nullptr);
+    if (scan == SDL_SCANCODE_LCTRL || scan == SDL_SCANCODE_RCTRL)
+    {
+        _control[scan == SDL_SCANCODE_RCTRL] = true;
+        return true;
+    }
+    const int number = scan == SDL_SCANCODE_0 ? 0 :
+                       (scan >= SDL_SCANCODE_1 && scan <= SDL_SCANCODE_9 ? int(scan - SDL_SCANCODE_1) + 1 : -1);
+    if (number >= 0 && _controlGroup.GetLength() && GWorld)
+    {
+        if (!_digits[number])
+        {
+            _digits[number] = true;
+            GameState* state = GWorld->GetGameState();
+            GameVarSpace vars;
+            state->BeginContext(&vars);
+            state->VarSetLocal("_number", float(number), true);
+            state->VarSetLocal("_assign", _control[0] || _control[1], true);
+            state->Execute(_controlGroup);
+            state->EndContext();
+        }
+        return true;
+    }
     const int index = CameraKeyIndex(key);
     if (index < 0)
         return false;
@@ -68,6 +92,19 @@ bool RTSViewport::OnKeyDown(unsigned key, unsigned, unsigned)
 
 bool RTSViewport::OnKeyUp(unsigned key, unsigned, unsigned)
 {
+    const auto scan = SDL_GetScancodeFromKey(SDL_Keycode(key), nullptr);
+    if (scan == SDL_SCANCODE_LCTRL || scan == SDL_SCANCODE_RCTRL)
+    {
+        _control[scan == SDL_SCANCODE_RCTRL] = false;
+        return true;
+    }
+    const int number = scan == SDL_SCANCODE_0 ? 0 :
+                       (scan >= SDL_SCANCODE_1 && scan <= SDL_SCANCODE_9 ? int(scan - SDL_SCANCODE_1) + 1 : -1);
+    if (number >= 0)
+    {
+        _digits[number] = false;
+        return true;
+    }
     const int index = CameraKeyIndex(key);
     if (index < 0)
         return false;
@@ -87,10 +124,15 @@ RTSViewport::RTSViewport(ControlsContainer* parent, int idc, const ParamEntry& c
         return RString();
     };
     _units = optionalText("selectableUnits");
+    _controlGroup = optionalText("onControlGroup");
+    _moveFeedback = optionalText("moveFeedback");
+    _healthUnits = optionalText("healthUnits");
     _boxSelect = optionalText("onBoxSelect");
     _placementActive = optionalText("placementActive");
     _placementValid = optionalText("placementValid");
     _placementClass = optionalText("placementClass");
+    _placementClassExpression = optionalText("placementClassExpression");
+    _resourceNodes = optionalText("resourceNodes");
     _previewClear = optionalText("onPreviewHidden");
     _cameraResetToken = optionalText("cameraResetToken");
     _cameraInput = cls >> "onCameraInput";
@@ -130,7 +172,7 @@ bool RTSViewport::TerrainHit(float x, float y, Vector3& hit, bool& sea)
 
 std::optional<RTS::ScreenRect> RTSViewport::UnitRect(Object* unit) const
 {
-    if (!unit || !unit->GetShape() || !GWorld || !GEngine || !GWorld->GetScene() || !GWorld->GetScene()->GetCamera())
+    if (!unit || unit->IsObjectHidden() || !unit->GetShape() || !GWorld || !GEngine || !GWorld->GetScene() || !GWorld->GetScene()->GetCamera())
         return std::nullopt;
     const Camera& camera = *GWorld->GetScene()->GetCamera();
     const auto& p = camera.Projection();
@@ -161,14 +203,27 @@ std::optional<RTS::ScreenRect> RTSViewport::UnitRect(Object* unit) const
     return rect;
 }
 
+bool RTSViewport::AcceptsCommandInput() const
+{
+    return _parent && !_parent->Child() && !_parent->GetMsgBox() &&
+           !(_parent->GetFocused() && _parent->GetFocused()->WantsTextInput());
+}
+
+void RTSViewport::ResetInput()
+{
+    _pressed = false;
+    _keys.fill(false);
+    _digits.fill(false);
+    _control.fill(false);
+    _motion.Reset();
+    _lastFrame = 0;
+}
+
 void RTSViewport::SetPos(float x, float y, float w, float h)
 {
     // A resize changes logical coordinates; cancel a gesture instead of issuing
     // a click/box-select between points from different UI coordinate frames.
-    _pressed = false;
-    _keys.fill(false);
-    _motion.Reset();
-    _lastFrame = 0;
+    ResetInput();
     CStatic::SetPos(x, y, w, h);
 }
 
@@ -284,10 +339,23 @@ void RTSViewport::BoxSelect(float x, float y)
 void RTSViewport::UpdatePreview(float x, float y)
 {
     const GameValue active = Evaluate(_placementActive);
+    RString model = _placementClass;
+    if (_placementClassExpression.GetLength())
+    {
+        const GameValue value = Evaluate(_placementClassExpression);
+        if (value.GetType() == GameString)
+            model = GameStringType(value);
+    }
+    if (model != _previewModel)
+    {
+        _previewCandidate = nullptr;
+        _ghost = nullptr;
+        _previewModel = model;
+    }
     Vector3 hit;
     bool sea = false;
     if (active.GetType() != GameBool || !static_cast<GameBoolType>(active) || !TerrainHit(x, y, hit, sea) ||
-        _placementClass.GetLength() == 0)
+        model.GetLength() == 0)
     {
         if (_previewCandidate)
             Evaluate(_previewClear);
@@ -297,7 +365,7 @@ void RTSViewport::UpdatePreview(float x, float y)
     }
     if (!_previewCandidate)
     {
-        _previewCandidate = NewNonAIVehicle(_placementClass);
+        _previewCandidate = NewNonAIVehicle(model);
         if (!_previewCandidate || !_previewCandidate->GetShape())
             return;
         _ghost = new ObjectColored(_previewCandidate->GetShape(), -1);
@@ -388,42 +456,149 @@ void RTSViewport::DrawSelection()
         if (position.Size() != 3 || position[0].GetType() != GameScalar || position[1].GetType() != GameScalar)
             continue;
         const float x = GameScalarType(position[0]), z = GameScalarType(position[1]);
+        DrawGroundRing(x, z, 1.6f, PackedColor(Color(0.25f, 1.0f, 0.55f, 1.0f)));
+    }
+}
+
+void RTSViewport::DrawGroundRing(float x, float z, float radius, PackedColor color)
+{
+    if (!GWorld || !GEngine || !GLandscape || !GWorld->GetScene() || !GWorld->GetScene()->GetCamera())
+        return;
+    const Camera& camera = *GWorld->GetScene()->GetCamera();
+    const Matrix4 inverse = camera.GetInvTransform();
+    const Matrix4& projection = camera.Projection();
+    Point2DAbs tl;
+    GEngine->Convert(tl, Point2DFloat(_x, _y));
+    const Rect2DAbs clip(tl, _w * GEngine->Width2D(), _h * GEngine->Height2D());
+    Point2DAbs previous;
+    bool havePrevious = false;
+    constexpr int segments = 32;
+    for (int i = 0; i <= segments; ++i)
+    {
+        const float angle = i * (6.283185307f / segments);
+        const float px = x + radius * std::cos(angle), pz = z + radius * std::sin(angle);
+        const Vector3 view = inverse.FastTransform(Vector3(px, GLandscape->SurfaceYAboveWater(px, pz) + 0.15f, pz));
+        if (view.Z() <= camera.Near())
+        {
+            havePrevious = false;
+            continue;
+        }
+        const Point2DAbs point(projection(0, 2) + projection(0, 0) * view.X() / (view.Z() * camera.Left()),
+                               projection(1, 2) + projection(1, 1) * view.Y() / (view.Z() * camera.Top()));
+        if (havePrevious)
+            GEngine->DrawLine(Line2DAbs(previous.x, previous.y, point.x, point.y), color, color, clip);
+        previous = point;
+        havePrevious = true;
+    }
+}
+
+void RTSViewport::DrawFeedback()
+{
+    const GameValue value = Evaluate(_moveFeedback);
+    if (value.GetType() != GameArray)
+        return;
+    const GameArrayType& feedback = value;
+    if (feedback.Size() != 2 || feedback[0].GetType() != GameArray || feedback[1].GetType() != GameScalar)
+        return;
+    const GameArrayType& pos = feedback[0];
+    if (pos.Size() != 3 || pos[0].GetType() != GameScalar || pos[1].GetType() != GameScalar)
+        return;
+    const float age = GameScalarType(feedback[1]);
+    const float pulse = 0.5f + 0.5f * std::sin(age * 16.0f);
+    DrawGroundRing(GameScalarType(pos[0]), GameScalarType(pos[1]), 1.5f + pulse,
+                   PackedColor(Color(1.0f, 0.8f, 0.25f, 1.0f - age / 0.8f)));
+}
+
+void RTSViewport::DrawHealth()
+{
+    if (!GEngine)
+        return;
+    const GameValue value = Evaluate(_healthUnits);
+    if (value.GetType() != GameArray)
+        return;
+    Point2DAbs tl;
+    GEngine->Convert(tl, Point2DFloat(_x, _y));
+    const Rect2DAbs clip(tl, _w * GEngine->Width2D(), _h * GEngine->Height2D());
+    const GameArrayType& units = value;
+    for (int i = 0; i < units.Size(); ++i)
+    {
+        if (units[i].GetType() != GameArray)
+            continue;
+        const GameArrayType& entry = units[i];
+        if (entry.Size() != 2 || entry[1].GetType() != GameScalar)
+            continue;
+        Object* unit = GetObject(entry[0]);
+        const auto rect = UnitRect(unit);
+        const float health = GameScalarType(entry[1]);
+        if (!rect || !std::isfinite(health) || health <= 0)
+            continue;
+        const float width = std::clamp(rect->right - rect->left, 28.0f, 56.0f);
+        // Animation-wide model bounds include poses far above the current head.
+        // CameraPosition follows the animated pilot/head point for infantry.
         const Camera& camera = *GWorld->GetScene()->GetCamera();
-        const Matrix4 inverse = camera.GetInvTransform();
-        const Matrix4& projection = camera.Projection();
+        const Vector3 view = camera.GetInvTransform().FastTransform(unit->CameraPosition());
+        if (view.Z() <= camera.Near())
+            continue;
+        const auto& p = camera.Projection();
+        const float center = p(0, 2) + p(0, 0) * view.X() / (view.Z() * camera.Left());
+        const float y = p(1, 2) + p(1, 1) * view.Y() / (view.Z() * camera.Top()) - 12;
+        const float left = center - width * 0.5f;
+        const PackedColor back(Color(0.015f, 0.025f, 0.02f, 1));
+        const PackedColor fill(health > 0.5f ? Color(0.25f, 0.9f, 0.4f, 1) :
+                               (health > 0.2f ? Color(1, 0.75f, 0.2f, 1) : Color(1, 0.2f, 0.1f, 1)));
+        for (int row = 0; row < 6; ++row)
+        {
+            GEngine->DrawLine(Line2DAbs(left - 1, y + row, left + width + 1, y + row), back, back, clip);
+            if (row > 0 && row < 5)
+                GEngine->DrawLine(Line2DAbs(left, y + row, left + width * std::clamp(health, 0.0f, 1.0f), y + row),
+                                   fill, fill, clip);
+        }
+    }
+}
+
+void RTSViewport::DrawResources()
+{
+    const GameValue value = Evaluate(_resourceNodes);
+    if (value.GetType() != GameArray || !GEngine || !GWorld || !GLandscape || !GWorld->GetScene() ||
+        !GWorld->GetScene()->GetCamera())
+        return;
+    const GameArrayType& nodes = value;
+    const Camera& camera = *GWorld->GetScene()->GetCamera();
+    const auto& p = camera.Projection();
+    for (int i = 0; i < nodes.Size(); ++i)
+    {
+        if (nodes[i].GetType() != GameArray)
+            continue;
+        const GameArrayType& node = nodes[i];
+        if (node.Size() != 2 || node[0].GetType() != GameArray || node[1].GetType() != GameScalar)
+            continue;
+        const GameArrayType& pos = node[0];
+        if (pos.Size() != 3 || pos[0].GetType() != GameScalar || pos[1].GetType() != GameScalar)
+            continue;
+        const float x = GameScalarType(pos[0]), z = GameScalarType(pos[1]);
+        DrawGroundRing(x, z, 5, PackedColor(Color(0.95f, 0.72f, 0.2f, 1)));
+        const Vector3 view = camera.GetInvTransform().FastTransform(Vector3(x, GLandscape->SurfaceYAboveWater(x, z) + 1, z));
+        if (view.Z() <= camera.Near())
+            continue;
+        const float sx = p(0, 2) + p(0, 0) * view.X() / (view.Z() * camera.Left());
+        const float sy = p(1, 2) + p(1, 1) * view.Y() / (view.Z() * camera.Top());
         Point2DAbs tl;
         GEngine->Convert(tl, Point2DFloat(_x, _y));
         const Rect2DAbs clip(tl, _w * GEngine->Width2D(), _h * GEngine->Height2D());
-        const PackedColor color(Color(0.25f, 1.0f, 0.55f, 1.0f));
-        Point2DAbs previous;
-        bool havePrevious = false;
-        constexpr int segments = 20;
-        for (int i = 0; i <= segments; ++i)
-        {
-            const float angle = i * (6.283185307f / segments);
-            const float px = x + 1.6f * std::cos(angle), pz = z + 1.6f * std::sin(angle);
-            const Vector3 view = inverse.FastTransform(Vector3(px, GLandscape->SurfaceYAboveWater(px, pz) + 0.15f, pz));
-            if (view.Z() <= camera.Near())
-                break;
-            const Point2DAbs point(projection(0, 2) + projection(0, 0) * view.X() / (view.Z() * camera.Left()),
-                                   projection(1, 2) + projection(1, 1) * view.Y() / (view.Z() * camera.Top()));
-            if (havePrevious)
-                GEngine->DrawLine(Line2DAbs(previous.x, previous.y, point.x, point.y), color, color, clip);
-            previous = point;
-            havePrevious = true;
-        }
+        GEngine->DrawText(Point2DAbs(sx, sy), _size, clip, _font, PackedColor(Color(1, 0.85f, 0.4f, 1)),
+                          Format("SUPPLIES %d", int(GameScalarType(node[1]))));
     }
 }
 
 void RTSViewport::OnDraw(float /*alpha*/)
 {
+    DrawResources();
     DrawSelection();
-    if (!SDL_GetKeyboardFocus() && !(GApp && GApp->m_keepFocus))
+    DrawFeedback();
+    DrawHealth();
+    if (!AcceptsCommandInput() || (!SDL_GetKeyboardFocus() && !(GApp && GApp->m_keepFocus)))
     {
-        _pressed = false;
-        _keys.fill(false);
-        _motion.Reset();
-        _lastFrame = 0;
+        ResetInput();
         if (_previewCandidate)
             Evaluate(_previewClear);
         _ghost = nullptr;

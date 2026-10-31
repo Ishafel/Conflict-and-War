@@ -109,13 +109,17 @@ class UserDisplay : public Display
     }
     bool DoKeyDown(unsigned key, unsigned repeat, unsigned flags) override
     {
-        if (_commandViewport && _commandViewport->OnKeyDown(key, repeat, flags))
+        if (_commandViewport && _commandViewport->AcceptsCommandInput() &&
+            _commandViewport->OnKeyDown(key, repeat, flags))
             return true;
+        if (_commandViewport && !_commandViewport->AcceptsCommandInput())
+            _commandViewport->ResetInput();
         return Display::DoKeyDown(key, repeat, flags);
     }
     bool DoKeyUp(unsigned key, unsigned repeat, unsigned flags) override
     {
-        if (_commandViewport && _commandViewport->OnKeyUp(key, repeat, flags))
+        if (_commandViewport && _commandViewport->AcceptsCommandInput() &&
+            _commandViewport->OnKeyUp(key, repeat, flags))
             return true;
         return Display::DoKeyUp(key, repeat, flags);
     }
@@ -140,6 +144,8 @@ void UserDisplay::OnButtonClicked(int idc)
 
 void UserDisplay::OnSimulate(EntityAI* vehicle)
 {
+    if (_commandViewport && !_commandViewport->AcceptsCommandInput())
+        _commandViewport->ResetInput();
     // GetKeysToDo always returns false in this context; poll the key directly
     if (InputSubsystem::Instance().ConsumeKeyPress(SDL_SCANCODE_ESCAPE))
     {

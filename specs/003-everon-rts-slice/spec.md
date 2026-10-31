@@ -94,7 +94,7 @@ The owner rejected the command map as the main screen after seeing it in-game. T
 
 - **FR-011**: Placement must check the candidate barracks geometry against existing world geometry, including rotated buildings with centres outside 12 m. Rejected placement must leave credits and barracks state unchanged; unavailable geometry must fail explicitly.
 - **FR-012**: The Everon button must start the slice in both Windows Game and GameDemo using one shared registration implementation; other demo modules remain unchanged.
-- **FR-013**: Left-click an owned soldier to select it, then left-click empty terrain to move the selection. Clicking another soldier changes selection. Right-click move/cancel remains supported. Both ordinary and rapid repeated clicks must reach the command viewport through normal UI dispatch. Sidebar clicks never issue orders.
+- **FR-013**: Owner correction 2026-10-31 (006/FR-013): left-click selects an owned unit; left-click empty terrain clears selection without issuing or cancelling orders. Right-click terrain moves, right-click a resource gathers, and right-click placement cancels preview. Ordinary and rapid repeated left clicks must never move units. Sidebar clicks never issue world orders.
 - **SC-006**: Native Windows regressions reproduce a large rotated building overlap, GameDemo menu entry, and selection plus actual movement using cursor/button input through the UI event path, without directly invoking the viewport handler.
 
 ## CI failures — 2026-10-28

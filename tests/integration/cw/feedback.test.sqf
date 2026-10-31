@@ -1,5 +1,5 @@
 // FR-018..022: actual pointer preview, production phases, exact clicks and group drag.
-triSimUntil { (count CWR_RTS)==20 }
+triSimUntil { (count CWR_RTS)==27 }
 triSimUntil { dialog }
 triAssertEq [triGetCinemaBorder,false]
 triAssertExcludes [triVisibleTexts,"ONLINE"]
@@ -43,7 +43,7 @@ triAssert [isNull (CWR_RTS select 2)]
 _site=[];
 {_dx=_x; {_p=[6519.04+_dx,6473.68+_x,0]; if ((count _site)==0) then {if ((_p call CWR_SiteError)=="") then {_site=+_p}}} forEach [-60,-40,-20,20,40,60]} forEach [-60,-40,-20,20,40,60];
 triAssertEq [count _site,3]
-CWR_RTS set [12,[(_site select 0)-12,(_site select 1)-12,0]]
+CWR_RTS set [12,[_site select 0,_site select 1,0]]
 call CWR_UpdateCamera
 triSimFrames 6
 triAssert [(CWR_RTS select 17) select 1]
@@ -98,7 +98,7 @@ _second=(CWR_RTS select 5) select 1
 triAssertEq [isObjectHidden _first,false]
 triAssertEq [isObjectHidden _second,false]
 _p=getPos _first
-CWR_RTS set [12,[(_p select 0)-12,(_p select 1)-12,0]]
+CWR_RTS set [12,[_p select 0,_p select 1,0]]
 CWR_RTS set [13,35]
 call CWR_UpdateCamera
 triSimFrames 8
@@ -133,29 +133,65 @@ triScreenshot "group_selected"
 _beforeFirst=getPos _first
 _beforeSecond=getPos _second
 triCursorMove [-0.5,0.3]
-triMouseLeft 1
+triMouseRight 1
 triSimFrames 2
-triMouseLeft 0
+triMouseRight 0
 triSimFrames 2
 triAssertEq [CWR_RTS select 9,"Move order issued"]
+triAssertEq [count (call CWR_MoveFeedback),2]
+triAssertEq [(CWR_RTS select 21) select 0,CWR_RTS select 15]
+triScreenshot "accepted_move_ring"
+_markerDeadline=((CWR_RTS select 21) select 1)+0.8
+triSimUntil { time>=_markerDeadline }
+triAssertEq [count (call CWR_MoveFeedback),0]
 triSimUntil { (([getPos _first,_beforeFirst] call CWR_Distance)>3) && (([getPos _second,_beforeSecond] call CWR_Distance)>3) }
 triScreenshot "group_movement"
 _target=+(CWR_RTS select 15)
+_lastFeedback=+(CWR_RTS select 21)
 triCursorMoveControl 7320
 triMouseLeft 1
 triSimFrames 2
 triMouseLeft 0
 triSimFrames 3
 triAssertEq [CWR_RTS select 15,_target]
+triAssertEq [CWR_RTS select 21,_lastFeedback]
 triAssertEq [CWR_RTS select 0,1800]
+// 006 FR-003: live health values and actual native bars at a close zoom.
+_first setPos [6535,6480,0]
+_second setPos [6538,6480,0]
+_first disableAI "MOVE"
+_second disableAI "MOVE"
+CWR_RTS set [12,[6535,6480,0]]
+CWR_RTS set [13,15]
+call CWR_UpdateCamera
+[_first,_second] call CWR_SetSelection
+_first setDamage 0
+_second setDamage 0.5
+triSimFrames 4
+_health=call CWR_HealthUnits
+triAssertNear [(_health select 0) select 1,1,0.01]
+triAssertNear [(_health select 1) select 1,0.5,0.01]
+triScreenshot "health_full_half_close"
+_second setDamage 0.9
+triSimFrames 4
+triAssertNear [((call CWR_HealthUnits) select 1) select 1,0.1,0.01]
+triScreenshot "health_low_close"
+_second hideObject true
+triAssertEq [count (call CWR_HealthUnits),1]
+_second hideObject false
 // Inspect an actual developed base, using the same player camera and units.
 _baseA=getPos (CWR_RTS select 1)
 _baseB=getPos (CWR_RTS select 2)
-CWR_RTS set [12,[((_baseA select 0)+(_baseB select 0))*0.5-12,((_baseA select 1)+(_baseB select 1))*0.5-12,0]]
+CWR_RTS set [12,[((_baseA select 0)+(_baseB select 0))*0.5,((_baseA select 1)+(_baseB select 1))*0.5,0]]
 CWR_RTS set [13,75]
 call CWR_UpdateCamera
 triSimFrames 12
 triScreenshot "base_overview"
+_lastFeedback=+(CWR_RTS select 21)
+[] call CWR_SetSelection
+call CWR_Move
+triAssert [!([6519,6473,0] call CWR_Click)]
+triAssertEq [CWR_RTS select 21,_lastFeedback]
 call CWR_Clear
 triAssertEq [isObjectHidden player,false]
 call CWR_Start

@@ -1,5 +1,5 @@
 // FR-013/SC-006: cursor/button state, normal UI hit testing (no direct control click).
-triSimUntil { (count CWR_RTS)==20 }
+triSimUntil { (count CWR_RTS)==27 }
 call CWR_Build
 triSimUntil { CWR_RTS select 18 }
 triSimUntil { dialog }
@@ -15,7 +15,7 @@ _first=(CWR_RTS select 5) select 0
 _second=(CWR_RTS select 5) select 1
 // Put a known unit exactly on the camera's centre ray, without changing its position.
 _p=getPos _first
-CWR_RTS set [12,[(_p select 0)-12,(_p select 1)-12,0]]
+CWR_RTS set [12,[_p select 0,_p select 1,0]]
 call CWR_UpdateCamera
 triSimFrames 10
 triCursorMove [0,0]
@@ -25,20 +25,20 @@ triMouseLeft 0
 triSimFrames 2
 triAssert [(CWR_RTS select 6)==_first]
 triScreenshot "normal_dispatch_selection"
-// Empty terrain reached by a second left click issues a move, including rapid clicks.
+// Right click on empty terrain issues movement.
 _before=getPos _first
 triCursorMove [-0.5,0.3]
-triMouseLeft 1
+triMouseRight 1
 triSimFrames 2
-triMouseLeft 0
+triMouseRight 0
 triSimFrames 2
 triAssertEq [count (CWR_RTS select 15),3]
 triAssertEq [CWR_RTS select 9,"Move order issued"]
 triSimUntil { ([getPos _first,_before] call CWR_Distance)>5 }
-triScreenshot "left_click_movement"
+triScreenshot "right_click_movement"
 // Another unit must be selectable through the same path.
 _p=getPos _second
-CWR_RTS set [12,[(_p select 0)-12,(_p select 1)-12,0]]
+CWR_RTS set [12,[_p select 0,_p select 1,0]]
 call CWR_UpdateCamera
 triSimFrames 10
 triCursorMove [0,0]

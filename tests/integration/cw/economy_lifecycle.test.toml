@@ -1,0 +1,5 @@
+tags=["cw","rts","full_game","headful"]
+binary="PoseidonGame"
+mission="content/cw/Missions/CWEveron.eden"
+timeout=50
+assert_timeout=10

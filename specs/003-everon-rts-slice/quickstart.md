@@ -3,7 +3,7 @@
 Build: `./build.cmd -Component Cpp`.
 Launch menu: `./scripts/run-cw.ps1 -DataDir <external-install>`; add `-Slice` for direct Everon entry. External installation must contain Everon and base CWA classes. CMake stages only own content beside the executable. The launcher never modifies external data.
 
-Main play area is actual 3D Everon. WASD/arrows pan, wheel zooms, HQ/Home returns to base. BUILD -> barracks card -> open site 22–150m from HQ -> wait15s -> INFANTRY -> rifleman twice -> wait10s. Left-click a soldier, then left-click empty terrain to move (right-click also works). Right-click placement cancels free. Expected balance1800 and two owned soldiers. Minimap clicks never issue world commands.
+Main play area is actual 3D Everon. WASD/arrows pan, wheel zooms, HQ/Home returns to base. BUILD -> barracks card -> open site 22–150m from HQ -> wait15s -> INFANTRY -> rifleman twice -> wait10s. Left-click a unit to select, then right-click terrain to move. Left-click empty terrain only clears selection (owner correction in 006/FR-013). Right-click placement cancels free. Expected balance1800 and two owned soldiers. Minimap clicks never issue world commands.
 
 Validation:
 
@@ -34,7 +34,7 @@ window dimensions and drawable screenshot pixels differ; record both when review
 
 Review regressions: placement.test checks a rotated building whose origin is 13 m away, missing geometry, rejection without debit and a clear-site success. mouse.test uses normal UI cursor/button polling for selection, movement by left click, switching units and sidebar isolation. menu_demo.test verifies the same Everon entry using PoseidonGameDemo.
 
-Interactive feedback: BUILD → barracks card displays a translucent model following the pointer. Green means valid, red means rejected; move onto the sidebar or right-click to hide/cancel it without payment. Drag LMB over infantry to select a group, release, then click terrain to move all members. Individual clicks use visible model bounds at every zoom. Selected units have green rings. Card portraits reveal clockwise during construction/training, display queue count and flash READY at completion. CENTER HQ returns the camera; the old HQ ONLINE placeholder has been removed. feedback.test.sqf verifies these paths with normal cursor/button input and phase screenshots.
+Interactive feedback: BUILD → barracks card displays a translucent model following the pointer. Green means valid, red means rejected; move onto the sidebar or right-click to hide/cancel it without payment. Drag LMB over infantry to select a group, release, then right-click terrain to move all members. Individual clicks use visible model bounds at every zoom. Selected units have green rings. Card portraits reveal clockwise during construction/training, display queue count and flash READY at completion. CENTER HQ returns the camera; the old HQ ONLINE placeholder has been removed. feedback.test.sqf verifies these paths with normal cursor/button input and phase screenshots.
 
 ## Revised validation (FR-023–026)
 Order barracks: credits2000, no barracks or ghost during15s. Wait READY; click, verify green/red ghost. Cancel, click READY again, deploy valid site: still2000, train immediately. Verify produced soldiers visible/selectable, initial observer hidden; menu/direct starts show commander view from first gameplay frame. Run native crash/RTS unit regressions, full Rust workspace and C&W Trident suite; inspect latest CI per platform.

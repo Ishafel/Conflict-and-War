@@ -10,7 +10,7 @@ triSendKey 41
 triSimFrames 5
 triAssertEq [triDisplay,0]
 triClick 7390
-triSimUntil { (count CWR_RTS)==20 }
+triSimUntil { (count CWR_RTS)==27 }
 triSimUntil { dialog }
 triAssertEq [triGetCinemaBorder,false]
 triAssert [(triGetControlVisible 7301)]

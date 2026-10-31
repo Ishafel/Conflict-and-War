@@ -7,6 +7,8 @@ using namespace Poseidon;
 #include <Poseidon/UI/UITestEngine.hpp>
 #include <Poseidon/UI/UIActiveDisplay.hpp>
 #include <Poseidon/UI/Controls/UIControls.hpp>
+#include <Poseidon/UI/Controls/RTSViewport.hpp>
+#include <Poseidon/Game/Commands/GameStateExtCommon.hpp>
 #include <Poseidon/Graphics/Core/Engine.hpp>
 #include <Poseidon/Graphics/Rendering/Frame/WorldFrameObserver.hpp>
 #include <Poseidon/Graphics/Shadow/ShadowMath.hpp>
@@ -2291,6 +2293,29 @@ GameValue TriGetControlRect(const GameState* state, GameValuePar arg)
     bounds.Add(position.y / GEngine->Height());
     bounds.Add(control->W() * GEngine->Width2D() / GEngine->Width());
     bounds.Add(control->H() * GEngine->Height2D() / GEngine->Height());
+    return result;
+}
+
+/// Read-only native projection evidence for FR-005, in physical pixels.
+GameValue TriGetRTSUnitRect(const GameState* state, GameValuePar arg)
+{
+    GameValue result = state->CreateGameValue(GameArray);
+    const GameArrayType& args = arg;
+    if (args.Size() != 2 || args[0].GetType() != GameScalar || args[1].GetType() != GameObject)
+        return result;
+    auto* owner = UIActiveDisplay::FindContainerWithIdc(GWorld, int(GameScalarType(args[0])));
+    auto* viewport = owner ? dynamic_cast<RTSViewport*>(owner->GetCtrl(int(GameScalarType(args[0])))) : nullptr;
+    if (!viewport)
+        return result;
+    const auto rect = viewport->ProjectedUnitRect(GetObject(args[1]));
+    if (rect)
+    {
+        GameArrayType& bounds = result;
+        bounds.Add(rect->left);
+        bounds.Add(rect->top);
+        bounds.Add(rect->right);
+        bounds.Add(rect->bottom);
+    }
     return result;
 }
 

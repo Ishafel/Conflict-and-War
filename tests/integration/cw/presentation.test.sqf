@@ -1,11 +1,12 @@
 // FR-033/034: compact cards and descriptions only on physical hover.
-triSimUntil { (count CWR_RTS)==20 }
+triSimUntil { (count CWR_RTS)==27 }
 triSimUntil { dialog }
 triCursorMoveControl 7301
 triSimFrames 12
 triAssertEq [triGetCinemaBorder,false]
 triAssertEq [triControlText 7302,"3000"]
 triAssertExcludes [triVisibleTexts,"BASE COMMAND"]
+triAssertExcludes [triVisibleTexts,"CENTER HQ"]
 triAssertEq [triGetControlVisible 7363,0]
 triScreenshot "compact_base"
 triCursorMoveControl 7310
@@ -40,7 +41,10 @@ triAssertEq [triGetControlVisible 7363,0]
 triScreenshot "hover_cleared"
 triClick 7310
 triCursorMoveControl 7310
+_expectedCursor=triCursorPos
 triSimFrames 12
+triScreenshot "producing_hover_before_assert"
+triAssertEq [triCursorPos,_expectedCursor]
 triAssert [!(ctrlEnabled 7310)]
 triAssert [ctrlIsHovered 7310]
 triAssert [triGetControlVisible 7363]
