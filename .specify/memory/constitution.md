@@ -1,11 +1,3 @@
-<!--
-Sync Impact Report
-Version: 1.0.0 -> 1.1.0 (owner clarifies current modification scope).
-Modified principle: V. Самостоятельный проект и совместимость ->
-V. Глубокая модификация Arma и совместимость.
-Expanded section: Project Constraints (current project format).
-Removed principles: none. Deferred placeholders: none.
--->
 # Conflict & War — C&W Constitution
 
 ## Core Principles
@@ -43,7 +35,11 @@ SDL3, OpenGL 3.3, OpenAL Soft, ImGui, Catch2 и Trident.
 
 ### IV. Проверяемая поддержка платформ
 
-Целевые платформы MUST включать Windows x64, macOS arm64 и macOS x86_64.
+Обязательные целевые платформы MUST включать Windows x64 и macOS arm64.
+По решению владельца от 2026-10-31 проверка macOS Intel (x86_64) исключена
+из обязательной приёмки и CI: доступного хоста для её проверки нет.
+Существующие Intel presets сохраняются для необязательного использования;
+их наличие MUST NOT считаться доказательством работоспособности Intel.
 Платформенные изменения MUST иметь воспроизводимые команды configure/build/test.
 Готовность каждой платформы подтверждается её нативной сборкой и тестами;
 проверка JSON или наличие CI-файла не заменяют компиляцию.
@@ -98,4 +94,4 @@ AGENTS.md, CONTRIBUTING.md, планы и ревью MUST соответство
 Ревью MUST проверять соблюдение конституции, отсутствие новых антипаттернов
 и наличие доказательств для закрытых задач.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-27 | **Last Amended**: 2026-10-27
+**Version**: 2.0.0 | **Ratified**: 2026-10-27 | **Last Amended**: 2026-10-31

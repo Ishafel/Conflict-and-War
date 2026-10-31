@@ -100,14 +100,14 @@ The owner rejected the command map as the main screen after seeing it in-game. T
 ## CI failures — 2026-10-28
 
 - **FR-014**: Windows developer-environment import must preserve the caller's VCPKG_ROOT (including its absence, so the repository default is chosen), while importing required VS/SDK variables. Existing non-checkout directories and modified/wrong-baseline checkouts must still be rejected.
-- **FR-015**: macOS CI must use Clang paired with the active Xcode SDK for both project and vcpkg dependency compilation. The pinned enkiTS source must include its directly used type_traits header through a reproducible overlay patch. Keep vcpkg baseline, dependency versions, strict errors, native three-platform matrix and all tests.
+- **FR-015**: macOS CI must use Clang paired with the active Xcode SDK for both project and vcpkg dependency compilation. The pinned enkiTS source must include its directly used type_traits header through a reproducible overlay patch. Keep vcpkg baseline, dependency versions, strict errors and all tests on the required Windows x64/macOS arm64 matrix. The owner removed mandatory Intel validation on 2026-10-31; existing Intel presets remain optional.
 - **SC-007**: A regression demonstrates that a VS-provided VCPKG_ROOT cannot override the caller; Windows prepare succeeds against the pinned checkout and invalid paths fail. GitHub's next Windows/macOS runs must be inspected for native configure/build/test outcomes, recording any subsequent blockers separately from gameplay readiness.
 
 ## Native timing test correction — 2026-10-28
 
 - **FR-016**: Functional interval/sleep tests must validate getSystemTime microsecond units against independently sampled std::chrono::steady_clock brackets, monotonic progress and the existing minimum wait expectations. Scheduler oversleep must not fail an otherwise correct timer. Do not skip tests, add retries or merely widen fixed wake-up deadlines.
 - **FR-017**: Keep the native ARM job required. If GitHub cannot allocate an ARM runner, record the infrastructure cancellation separately; do not replace it with an Intel run or claim ARM readiness.
-- **SC-008**: The corrected tests pass on Windows, including a deliberately delayed workload; a native Intel rerun must determine the macOS result. The bracket oracle must still reject stopped clocks and incorrect microsecond scaling. Remaining ARM capacity failures remain explicit.
+- **SC-008**: The corrected tests pass on Windows, including a deliberately delayed workload; a native ARM run determines the required macOS result. The bracket oracle must still reject stopped clocks and incorrect microsecond scaling. Remaining ARM capacity failures remain explicit. Intel validation is optional by the owner's 2026-10-31 decision.
 
 ## Interactive RTS feedback — 2026-10-28
 

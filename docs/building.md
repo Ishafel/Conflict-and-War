@@ -1,10 +1,12 @@
 # Сборка Conflict & War
 
-Цели: Windows x64, macOS arm64 (Apple Silicon) и macOS x86_64 (Intel).
+Обязательные цели: Windows x64 и macOS arm64 (Apple Silicon).
 Собирать нативно на соответствующей ОС и архитектуре. Windows x64 сборка и тесты подтверждены в [отчёте](../specs/002-windows-build-pipeline/verification.md).
 Нативная macOS arm64 сборка, Foundation/Rust tests и запуск главного меню подтверждены
 в [отчёте](../specs/001-project-foundation/verification.md#нативная-macos-arm64--2026-10-31).
-macOS x86_64 пока не проверена.
+Проверка macOS x86_64 (Intel) исключена из обязательной приёмки и CI решением
+владельца от 2026-10-31 из-за отсутствия доступного хоста. Intel presets сохранены
+для необязательного использования; это не подтверждает работоспособность Intel.
 
 ## Инструменты
 
@@ -98,7 +100,7 @@ git -C build/vcpkg checkout "$baseline"
 ./build/vcpkg/bootstrap-vcpkg.sh -disableMetrics
 export VCPKG_ROOT="$PWD/build/vcpkg"
 
-# Apple Silicon; на Intel заменить arm64 на x64 в трёх командах.
+# Обязательная macOS-платформа: Apple Silicon.
 cmake --preset macos-arm64-clang-rwdi
 cmake --build --preset macos-arm64-clang-rwdi --parallel 3
 ctest --preset macos-arm64-clang-rwdi
@@ -113,7 +115,8 @@ cargo test --workspace --locked
 с его SDK. Отдельный пакет Homebrew clang-format предоставляет форматтер. Это исключает случайную
 подмену SDK-компилятора новой основной версией Homebrew LLVM. Baseline vcpkg
 не меняется; overlay enkiTS явно подключает type_traits, используемый upstream.
-ARM и Intel проверяются раздельно; universal binary пока не создаётся.
+Intel presets с заменой arm64 на x64 доступны для необязательных прогонов;
+они не входят в текущую приёмку. Universal binary пока не создаётся.
 
 ## Результаты и проверки
 
@@ -144,7 +147,7 @@ Test presets намеренно запускают только `PoseidonFoundat
 [Workflow](../.github/workflows/build.yml) вызывает на Windows ту же build.cmd → scripts/windows-build.ps1.
 На macOS сохраняются отдельные configure, все C++ targets,
 Foundation CTest, сборку и тесты Rust workspace. Нативные runners: Windows 2022,
-macOS 15 arm64 и macOS 15 Intel; соответствие меток проверено по
+macOS 15 arm64; соответствие меток проверено по
 [официальному списку GitHub](https://github.com/actions/runner-images).
 Workflow не публикует binaries и не выполняет деплой. Запуск произойдёт после
 попадания изменения в GitHub либо через `workflow_dispatch`; локальное добавление

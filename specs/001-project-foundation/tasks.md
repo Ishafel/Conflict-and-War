@@ -2,7 +2,7 @@
 
 **Input**: `specs/001-project-foundation/spec.md` и `plan.md`.
 
-**Tests**: обязательны проверки конфигурации и нативные build/test по SC-001–SC-004.
+**Tests**: обязательны проверки конфигурации и нативные build/test по SC-001–SC-005.
 **Organization**: задачи сгруппированы по пользовательским историям Spec Kit.
 
 ## Phase 1: Setup (Shared Infrastructure)
@@ -26,12 +26,17 @@
 
 ## Phase 4: User Story 2 - Нативная сборка Windows и macOS (Priority: P1)
 
-**Independent Test**: три нативных build/test по docs/building.md (SC-003).
+**Independent Test**: два нативных build/test по docs/building.md (SC-003).
 
 - [x] T009 [US2] Настроить build/test пары в cmake/presets/windows.json и cmake/presets/macos.json (FR-005, SC-002).
 - [x] T010 [US2] Подготовить переносимые cmake/RunClangFormat.cmake и cmake/RunClangTidy.cmake и проверить обработку ошибок (SC-002).
 - [x] T011 [US2] Добавить .github/workflows/build.yml и docs/building.md (FR-006, SC-004).
-- [ ] T012 [US2] Выполнить Windows x64, macOS arm64/x64 C++/Rust build/test; сохранить результаты в verification.md (SC-003). Windows x64 подтверждена; 2026-10-31 нативная macOS arm64: все C++ targets/Rust workspace, 496 Foundation и 205 Rust tests PASS. Остаётся подтверждение macOS x86_64; см. verification.md.
+- [x] T012 [US2] Выполнить Windows x64 и macOS arm64 C++/Rust build/test; сохранить результаты в verification.md (SC-003). Windows x64 подтверждена; 2026-10-31 нативная macOS arm64: все C++ targets/Rust workspace, 496 Foundation и 205 Rust tests PASS. Intel исключена из приёмки владельцем 2026-10-31; см. verification.md.
+
+## Phase 5: Owner platform scope correction — 2026-10-31
+
+- [x] T013 [US2] Согласовать конституцию, AGENTS.md, README, docs/building.md и активные spec/plan/tasks: Intel-проверка необязательна и не блокирует приёмку (FR-008, SC-005).
+- [x] T014 [US2] Удалить Intel job из .github/workflows/build.yml, проверить YAML-матрицу, сохранность Windows/ARM тестовых шагов и Intel presets; записать результат в verification.md (FR-008, SC-005).
 
 ## Dependencies & Execution Order
 

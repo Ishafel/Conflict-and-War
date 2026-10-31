@@ -7,7 +7,7 @@ Close T026/T028/T041 in a separate specification. Reproduce first, fix evaluator
 **Primary Dependencies**: existing CMake/Ninja/Clang, Catch2, Trident; SDL3/OpenGL3.3/OpenAL/ImGui unchanged.
 **Storage**: current GameEvaluator context owns control signal and exit payload; no TLS or new globals.
 **Testing**: native evaluator/PoTime regressions, core/evaluator suites and targeted gameplay; dedicated sampled Catch2 benchmark.
-**Target Platform**: Windows x64, macOS arm64/x64; native Windows here, macOS build/test via CI with gameplay unclaimed.
+**Target Platform**: Windows x64 and macOS arm64; native Windows here, macOS build/test via CI with gameplay unclaimed. Intel validation became optional by the owner's 2026-10-31 decision; existing presets remain available.
 **Project Type**: game engine and tests.
 **Performance Goals**: report statistically sampled operation costs; no machine-independent throughput correctness limit.
 **Constraints**: no clock replacement, no new library, no skipped correctness checks, preserve licenses and external-data separation.

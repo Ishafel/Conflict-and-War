@@ -13,7 +13,7 @@
 **Primary Dependencies**: существующие SDL3, OpenGL 3.3, OpenAL, ImGui, vcpkg, CMake/Ninja/Clang, Trident.
 **Storage**: состояние одиночной миссии в памяти; исходники ресурсов в `content/cw/`.
 **Testing**: Trident игровые проверки команд и UI, PoseidonTools lint, Windows native build, снимки 720p/1080p.
-**Target Platform**: Windows x64, macOS arm64/x86_64; macOS требует отдельного нативного прогона.
+**Target Platform**: Windows x64 и macOS arm64; macOS требует отдельного нативного прогона. Intel-проверка исключена из обязательной приёмки владельцем 2026-10-31; presets сохранены для необязательного использования.
 **Project Type**: desktop game modification.
 **Performance Goals**: один проход очереди каждые 0.1 с; максимум 5 оплаченных заказов.
 **Constraints**: нет копирования игровых данных, сторонних UI и графики; нет смены стека; требуются явные ошибки отсутствующего контента.

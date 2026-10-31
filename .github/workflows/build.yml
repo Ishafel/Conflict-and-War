@@ -21,8 +21,6 @@ jobs:
             preset: win-x64-clang-rwdi
           - os: macos-15
             preset: macos-arm64-clang-rwdi
-          - os: macos-15-intel
-            preset: macos-x64-clang-rwdi
     env:
       VCPKG_ROOT: ${{ github.workspace }}/build/vcpkg
     steps:
