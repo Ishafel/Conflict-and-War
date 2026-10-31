@@ -2,8 +2,9 @@
 
 Обязательные цели: Windows x64 и macOS arm64 (Apple Silicon).
 Собирать нативно на соответствующей ОС и архитектуре. Windows x64 сборка и тесты подтверждены в [отчёте](../specs/002-windows-build-pipeline/verification.md).
-Нативная macOS arm64 сборка, Foundation/Rust tests и запуск главного меню подтверждены
-в [отчёте](../specs/001-project-foundation/verification.md#нативная-macos-arm64--2026-10-31).
+Нативная macOS arm64 сборка, Foundation/Rust tests и игровой прогон Everon подтверждены
+в [отчёте сборки](../specs/001-project-foundation/verification.md#нативная-macos-arm64--2026-10-31)
+и [отчёте игрового прогона](../specs/003-everon-rts-slice/verification.md).
 Проверка macOS x86_64 (Intel) исключена из обязательной приёмки и CI решением
 владельца от 2026-10-31 из-за отсутствия доступного хоста. Intel presets сохранены
 для необязательного использования; это не подтверждает работоспособность Intel.

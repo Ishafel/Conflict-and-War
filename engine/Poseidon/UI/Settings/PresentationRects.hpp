@@ -29,6 +29,8 @@ struct Rect
 
 Rect PhysicalViewportRect();
 Rect Logical2DRect(const AspectSettings& aspect);
+// Preserve physical viewport placement when moving between valid, nonempty UI bands.
+Rect RebaseRect(Rect control, Rect from, Rect to);
 Rect CenterRatioRect(float targetRatio, int viewportWidth, int viewportHeight);
 Rect ResolveRect(RectKind kind, int viewportWidth, int viewportHeight, const AspectSettings& aspect);
 

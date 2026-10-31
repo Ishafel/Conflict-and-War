@@ -2268,7 +2268,33 @@ GameValue TriIsWindowed(const GameState* /*state*/)
     return GameValue(GEngine->IsWindowed() ? "OK:windowed" : "OK:fullscreen");
 }
 
-/// triGetWindowSize — return the engine's current render size as "WxH".
+/// triGetControlRect — physical viewport bounds, independent of the logical UI band.
+GameValue TriGetControlRect(const GameState* state, GameValuePar arg)
+{
+    GameValue result = state->CreateGameValue(GameArray);
+    auto* display = GetActiveDisplayForSQF();
+    if (!display || !GEngine || GEngine->Width() <= 0 || GEngine->Height() <= 0)
+        return result;
+    const int idc = int(GameScalarType(arg));
+    if (!display->GetCtrl(idc))
+    {
+        if (auto* owner = UIActiveDisplay::FindContainerWithIdc(GWorld, idc))
+            display = owner;
+    }
+    auto* control = dynamic_cast<Control*>(display->GetCtrl(idc));
+    if (!control)
+        return result;
+    Point2DAbs position;
+    GEngine->Convert(position, Point2DFloat(control->X(), control->Y()));
+    GameArrayType& bounds = result;
+    bounds.Add(position.x / GEngine->Width());
+    bounds.Add(position.y / GEngine->Height());
+    bounds.Add(control->W() * GEngine->Width2D() / GEngine->Width());
+    bounds.Add(control->H() * GEngine->Height2D() / GEngine->Height());
+    return result;
+}
+
+/// triGetWindowSize — current render size as "WxH".
 GameValue TriGetWindowSize(const GameState* /*state*/)
 {
     if (!GEngine)

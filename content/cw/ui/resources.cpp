@@ -64,12 +64,30 @@ class CWR_BarracksArt: CWR_Text { type=0; style=48; x=0.785; y=0.49; w=0.091; h=
 class CWR_InfantryArt: CWR_BarracksArt {};
 class CWR_Command
 {
-    idd=7300; movingEnable=0;
+    idd = 7300;
+    movingEnable = 0;
+    fullViewport = 1;
     controlsBackground[]={"Steel","Panel","Edge","HeaderPlate","HeaderRule","MapFrame","EconomyPlate","SectionRule","CardFrame","CardWell","BottomRule","WorldTitlePlate","HelpPlate"};
     controls[]={"World","Map","Header","Identity","Theatre","Credits","ResourceLabel","Status","TabBuild","TabInfantry","BuildArt","TrainArt","Build","Train","BuildLabel","TrainLabel","BuildSweep","TrainSweep","Production","Home","Exit","Help","WorldTitle","WorldSubtitle","BuildActive","TrainActive","TooltipPlate","TooltipBorder","DetailTitle","DetailBody","TrainLock"};
     class World: CWR_Text { type=102; idc=7301; x=0; y=0; w=0.76; h=1; onWorldClick="call CWR_WorldClick"; onCameraInput="call CWR_CameraInput"; cameraResetToken="CWR_RTS select 19"; selectionPosition="call CWR_SelectionPosition"; selectableUnits="call CWR_SelectableUnits"; onBoxSelect="_units call CWR_SetSelection"; placementActive="(CWR_RTS select 7)==1"; placementClass="Barracks"; placementValid="call CWR_PreviewSite"; onPreviewHidden="CWR_RTS set [17,[]]"; };
-    class Steel: CWR_Text { x=0.76; y=0; w=0.24; h=1; colorBackground[]={0.18,0.21,0.20,1}; };
-    class Panel: CWR_Text { x=0.764; y=0; w=0.236; h=1; colorBackground[]={0.045,0.065,0.065,1}; };
+    class Steel : CWR_Text
+    {
+        idc = 7371;
+        x = 0.76;
+        y = 0;
+        w = 0.24;
+        h = 1;
+        colorBackground[] = {0.18, 0.21, 0.20, 1};
+    };
+    class Panel : CWR_Text
+    {
+        idc = 7370;
+        x = 0.764;
+        y = 0;
+        w = 0.236;
+        h = 1;
+        colorBackground[] = {0.045, 0.065, 0.065, 1};
+    };
     class Edge: CWR_Text { x=0.76; y=0; w=0.002; h=1; colorBackground[]={0.52,0.46,0.31,1}; };
     class HeaderPlate: CWR_Text { x=0.764; y=0; w=0.236; h=0.095; colorBackground[]={0.09,0.115,0.11,1}; };
     class HeaderRule: CWR_Text { x=0.785; y=0.087; w=0.19; h=0.0015; colorBackground[]={0.34,0.36,0.29,1}; };

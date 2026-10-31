@@ -38,7 +38,7 @@
 ## Phase 6: Validation and polish
 
 - [x] T015 Собрать Windows и прогнать lint/Trident, записать доказательства в specs/003-everon-rts-slice/verification.md (FR-008, SC-001–004).
-- [ ] T016 Выполнить нативные macOS arm64 build/test/run и записать результаты в specs/003-everon-rts-slice/verification.md (FR-008). 2026-10-31 arm64: все C++ targets/Rust workspace, 496 Foundation + 205 Rust tests и главное меню PASS; Остаётся Everon/3D-ввод/панель на arm64. Intel-проверка исключена владельцем 2026-10-31.
+- [x] T016 Выполнить нативные macOS arm64 build/test/run и записать результаты в specs/003-everon-rts-slice/verification.md (FR-008). 2026-10-31 arm64: build/test и финальный игровой набор25/25 PASS; включая полный экран, ввод/панель и resize-регрессию, см. verification.md. Intel-проверка исключена владельцем 2026-10-31.
 - [x] T017 Провести converge по spec/plan/tasks и добавить выявленные пробелы в specs/003-everon-rts-slice/tasks.md (FR-008).
 
 ## Dependencies & Parallel Opportunities
@@ -71,7 +71,7 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 
 Сверка 2026-10-27: 10 FR, 5 SC, 7 acceptance scenarios, 6 решений плана, 5 принципов конституции. Два missing-пробела: HIGH — нативные macOS-доказательства; MEDIUM — отдельное legacy-исправление. Contradicts/unrequested/partial: 0. Windows-реализация и доказательства перечислены в verification.md. Это не заявление о полной готовности всех платформ.
 
-- [ ] T027 HIGH: Выполнить нативные configure/build/test/run на macOS arm64, проверить 3D-ввод и панель, сохранить команды/результаты в specs/003-everon-rts-slice/verification.md и закрыть T016 по доказательствам — FR-008, T016, Constitution IV (missing). Сборки и CI-проверки arm64/x64 для7abc3a4 прошли2026-10-30; 2026-10-31 для984d375 локальные arm64 configure/build/Foundation/Rust tests и запуск меню PASS. Остаётся игровой запуск Everon/3D-ввод/панель на arm64. Intel-проверка исключена владельцем 2026-10-31.
+- [x] T027 HIGH: Выполнить нативные configure/build/test/run на macOS arm64, проверить 3D-ввод и панель, сохранить команды/результаты в specs/003-everon-rts-slice/verification.md и закрыть T016 по доказательствам — FR-008, T016, Constitution IV (missing). Сборки и CI-проверки arm64/x64 для7abc3a4 прошли2026-10-30; 2026-10-31 для984d375 локальные arm64 configure/build/Foundation/Rust tests и запуск меню PASS. 2026-10-31 финальный arm64 игровой набор25/25 PASS; Everon/3D-ввод/панель и fullscreen проверены, см. verification.md. Intel-проверка исключена владельцем 2026-10-31.
 - [x] T028 MEDIUM: Выполнить отдельный Spec Kit цикл для унаследованной области EvalBreak в engine/Evaluator/express.cpp, добавить минимальное воспроизведение вложенных call/exitWith и регрессию до исправления; связать результат с T026 — T026, Constitution III (missing). За пределами игрового среза; не расширять текущую миссию ради этой ошибки.
 
 ## Phase 9: Windows review corrections
@@ -145,6 +145,11 @@ T063/T064→T065.
 
 ## Legacy follow-up: array equality
 
-- [ ] T066 Reproduce and specify array equality separately in engine/Evaluator/express.cpp GameDataArray::IsEqualTo (currently always false); implement declared comparison semantics with regressions. Impact: value comparisons of arrays cannot succeed; current RTS uses scalar/object checks and the scope-exit tests compare elements directly. Outside the scope-exit/timer repair — Constitution III.
+- [x] T066 Reproduce and specify array equality separately in engine/Evaluator/express.cpp GameDataArray::IsEqualTo (currently always false); implement declared comparison semantics with regressions. Impact: value comparisons of arrays cannot succeed; current RTS uses scalar/object checks and the scope-exit tests compare elements directly. Completed in005-array-value-equality: red14 assertions, green6 cases/55 assertions; typed Trident array assertions also repaired and final gameplay25/25 PASS. Outside the scope-exit/timer repair — Constitution III.
 
-T026/T028/T041 resolved by [004-evaluator-time-debt](../004-evaluator-time-debt/spec.md): corrected original-code reproduction, context-owned exit results and genuine error propagation; timer throughput migrated to a separate sampled benchmark. Native evidence: [verification](../004-evaluator-time-debt/verification.md). T066 is a separately recorded inherited comparison issue; macOS gameplay remains open.
+T026/T028/T041 resolved by [004-evaluator-time-debt](../004-evaluator-time-debt/spec.md): corrected original-code reproduction, context-owned exit results and genuine error propagation; timer throughput migrated to a separate sampled benchmark. Native evidence: [verification](../004-evaluator-time-debt/verification.md). T066 is resolved by005-array-value-equality; native macOS gameplay is verified in the2026-10-31 closure report below.
+
+## Phase 17: Native macOS validation completion
+
+- [x] T067 [US1] Reproduce the interface.test.sqf fixed-screen-grid placement failure at a height-clamped Retina window, validate a clear world site before aiming the camera, then assert native viewport placement matches the model preview including land-contact adjustment; retain economy/obstruction/input checks and verify exact native720p/1080p plus clamped-size regression. Record results in verification.md — FR-008/009, SC-005, T016/T027.
+- [x] T068 [US3] Add opt-in fullViewport layout in UI/Controls/UIControls.hpp and UI/Map/UIContainers.cpp using PresentationRects mapping, enable it for content/cw/ui/resources.cpp CWR_Command; expose read-only triGetControlRect in GameStateExtTest.cpp/registration, add meaningful container and tests/integration/cw/layout.test.sqf regressions, verify edge alignment, physical pointer input and screenshots on native macOS, record evidence — FR-036, SC-015.

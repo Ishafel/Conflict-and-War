@@ -14,6 +14,31 @@
 **Storage**: состояние одиночной миссии в памяти; исходники ресурсов в `content/cw/`.
 **Testing**: Trident игровые проверки команд и UI, PoseidonTools lint, Windows native build, снимки 720p/1080p.
 **Target Platform**: Windows x64 и macOS arm64; macOS требует отдельного нативного прогона. Intel-проверка исключена из обязательной приёмки владельцем 2026-10-31; presets сохранены для необязательного использования.
+
+MacOS validation correction (2026-10-31, FR-008/009, SC-005): a 1920×1080
+logical window is height-clamped by the desktop and renders at3840×2104 on
+Retina. The interface test's fixed screen grid may then miss every clear site.
+Use an independently validated world site, aim the existing camera at it and
+place through the native viewport click; assert the actual building position
+matches the native model preview (including its land-contact adjustment).
+Keep obstruction checks and economic assertions. Also run
+exact native1280×720/1920×1080 drawable sizes using matching Retina logical
+dimensions, and retain the clamped-size run as a resize regression.
+
+Owner sidebar correction FR-036/SC-015: opt CWR_Command into full-viewport2D
+layout. ControlsContainer owns a previous UI-band rectangle and rebases its existing
+foreground/background control positions to the current engine band at load/simulate/draw;
+do not change global aspect policy or other dialogs. Reuse Presentation::Rect and add
+an explicit pure rectangle conversion beside existing presentation helpers. Verify
+right-edge/width preservation and resize/back stability, then native resized-window
+screenshots and cursor input. Exact dimensions are read from the drawable.
+Add read-only triGetControlRect in GameStateExtTest.cpp/registration to inspect
+physical normalized bounds; give sidebar plates stable test IDs. A native Trident
+layout scenario toggles the existing display-style policy, checks edge bounds,
+pointer hover, gesture cancellation and restoration; no global policy override is
+introduced by the production layout implementation.
+CI adds a strict CTest selection for the container and array-assertion regressions
+on both required platforms; existing test steps remain intact.
 **Project Type**: desktop game modification.
 **Performance Goals**: один проход очереди каждые 0.1 с; максимум 5 оплаченных заказов.
 **Constraints**: нет копирования игровых данных, сторонних UI и графики; нет смены стека; требуются явные ошибки отсутствующего контента.

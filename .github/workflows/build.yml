@@ -71,6 +71,10 @@ jobs:
         run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure -R "^PoseidonTests - (RTS (ray|drag|production|whole|camera)|tri assertions distinguish)"
       - name: Evaluator scope exit regressions without game data
         run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure --no-tests=error -R "^PoseidonCoreTests - Evaluator scope exit"
+      - name: Evaluator array value equality regressions without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure --no-tests=error -R "^PoseidonCoreTests - Array value equality"
+      - name: C&W viewport layout and array assertion regressions without game data
+        run: ctest --test-dir build/${{ matrix.preset }} --output-on-failure --no-tests=error -R "^PoseidonTests - (Full viewport|Ordinary dialogs|tri assertions compare array|tri array assertion)"
       - name: Measure timer operation costs separately from correctness
         shell: pwsh
         run: |

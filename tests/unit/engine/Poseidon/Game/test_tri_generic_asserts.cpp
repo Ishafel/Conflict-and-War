@@ -3,6 +3,7 @@
 #include <Evaluator/express.hpp>
 #include <Poseidon/Foundation/Modules/Modules.hpp>
 #include <string>
+#include <initializer_list>
 
 using namespace Poseidon;
 using namespace Catch::Matchers;
@@ -88,7 +89,42 @@ static GameValue GScalar(float f)
     return GameValue(f);
 }
 
+GameValue ValueArray(std::initializer_list<GameValue> values)
+{
+    GameArrayType array;
+    for (const GameValue& value : values)
+        array.Add(value);
+    return GameValue(array);
+}
+
 } // namespace
+
+TEST_CASE("tri assertions compare array contents and types", "[tri][generic-assert][array-assert]")
+{
+    const GameValue left = ValueArray({1.0f, ValueArray({true, "A"})});
+    const GameValue equal = ValueArray({1.0f, ValueArray({true, "A"})});
+    const GameValue different = ValueArray({1.0f, ValueArray({false, "A"})});
+    CHECK(S(TriAssertEq(nullptr, ValueArray({left, equal}))) == "OK");
+    CHECK_THAT(S(TriAssertEq(nullptr, ValueArray({left, different}))), StartsWith("FAIL:"));
+    CHECK(S(TriAssertNe(nullptr, ValueArray({left, different}))) == "OK");
+    CHECK_THAT(S(TriAssertNe(nullptr, ValueArray({left, equal}))), StartsWith("FAIL:"));
+    CHECK(S(TriAssertEq(nullptr, ValueArray({ValueArray({}), ValueArray({})}))) == "OK");
+    CHECK_THAT(S(TriAssertEq(nullptr, ValueArray({ValueArray({}), ""}))), StartsWith("FAIL:"));
+    CHECK(S(TriAssertNe(nullptr, ValueArray({ValueArray({1.0f}), ValueArray({"1"})}))) == "OK");
+    const GameValue undefined = ValueArray({GameValue()});
+    CHECK_THAT(S(TriAssertEq(nullptr, ValueArray({undefined, undefined}))), StartsWith("FAIL:"));
+}
+
+TEST_CASE("tri array assertion failures display actual contents", "[tri][generic-assert][array-assert]")
+{
+    const GameValue left = ValueArray({1.0f, 2.0f});
+    const GameValue right = ValueArray({1.0f, 3.0f});
+    const std::string mismatch = S(TriAssertEq(nullptr, ValueArray({left, right})));
+    CHECK_THAT(mismatch, ContainsSubstring("expected == [1,3]"));
+    CHECK_THAT(mismatch, ContainsSubstring("got [1,2]"));
+    const std::string equal = S(TriAssertNe(nullptr, ValueArray({left, left})));
+    CHECK_THAT(equal, ContainsSubstring("expected != [1,2]"));
+}
 
 // ============================================================================
 // triAssert / triRefute

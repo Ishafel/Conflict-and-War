@@ -20,6 +20,8 @@ std::vector<std::string> GRemoteExecLog;
 // Scalars use %g; strings use the raw value (GetString, no quotes).
 static std::string TriValStr(const GameValue& v)
 {
+    if (v.GetType() == GameArray)
+        return std::string(v.GetText().Data());
     if (v.GetType() == GameBool)
         return (GameBoolType)v ? "true" : "false";
     if (v.GetType() == GameScalar)
@@ -127,7 +129,7 @@ GameValue TriRefute(const GameState*, GameValuePar arg)
 }
 
 /// triAssertEq [got, expected] — OK if got == expected.
-/// Scalar: exact float equality. Otherwise: string representation equality.
+/// Arrays: typed content equality. Scalars: exact equality. Other values: display strings.
 GameValue TriAssertEq(const GameState*, GameValuePar arg)
 {
     if (arg.GetType() != GameArray)
@@ -136,7 +138,9 @@ GameValue TriAssertEq(const GameState*, GameValuePar arg)
     if (a.Size() < 2)
         return GameValue("FAIL:expected [got, expected]");
     bool eq;
-    if (a[0].GetType() == GameScalar && a[1].GetType() == GameScalar)
+    if (a[0].GetType() == GameArray || a[1].GetType() == GameArray)
+        eq = a[0].IsEqualTo(a[1]);
+    else if (a[0].GetType() == GameScalar && a[1].GetType() == GameScalar)
         eq = ((float)(GameScalarType)a[0] == (float)(GameScalarType)a[1]);
     else
         eq = (TriValStr(a[0]) == TriValStr(a[1]));
@@ -156,7 +160,9 @@ GameValue TriAssertNe(const GameState*, GameValuePar arg)
     if (a.Size() < 2)
         return GameValue("FAIL:expected [got, expected]");
     bool eq;
-    if (a[0].GetType() == GameScalar && a[1].GetType() == GameScalar)
+    if (a[0].GetType() == GameArray || a[1].GetType() == GameArray)
+        eq = a[0].IsEqualTo(a[1]);
+    else if (a[0].GetType() == GameScalar && a[1].GetType() == GameScalar)
         eq = ((float)(GameScalarType)a[0] == (float)(GameScalarType)a[1]);
     else
         eq = (TriValStr(a[0]) == TriValStr(a[1]));

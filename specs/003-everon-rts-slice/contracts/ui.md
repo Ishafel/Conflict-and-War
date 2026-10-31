@@ -1,5 +1,12 @@
 # User interface contract
 
+FR-036: CWR_Command opts into fullViewport layout. Background7371 spans physical
+X=.76..1 and Y=0..1; inner panel7370 spans X=.764..1. World7301 spans X=0..76%.
+The container remaps controls across changing logical UI bands without changing the
+global aspect policy. Physical rendering and pointer hit bounds stay aligned;
+band changes cancel an active world gesture. Other dialogs retain safe-area layout.
+Read-only triGetControlRect returns physical normalized [x,y,w,h], or[] if absent.
+
 CWR_Command IDD7300: transparent world viewport 7301 left 76%, minimap7304 upper right, credits7302, status7303, tabs7320/7321, production cards7310/7311 in two columns, queue/progress7305, home7315 and exit7316. Left click in world places/selects, or moves a selected soldier on empty terrain; right click moves/cancels. Camera scroll zoom, WASD/arrows pan, Home recenters. 3D always visible behind UI. Main menu continues to start Everon with7390.
 
 Native callbacks: selectableUnits returns owned live objects; selectionPositions returns their selected world positions. onWorldClick receives _unit (screen hit), _pos and _button. onBoxSelect receives _units chosen within the drag rectangle. placementActive enables render-only placementClass; placementValid receives _pos, _sea, _candidate and returns the common validator result. CWR_RTS[17] records [position,valid] for feedback. Production overlays 7350/7351 are disabled controls over images; productionState returns [fraction,queueCount,ready]. No debit occurs in any native drawing callback. HQ ONLINE removed; 7315 is labelled CENTER HQ.

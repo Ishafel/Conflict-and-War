@@ -151,3 +151,14 @@ Owner requests a coherent player-facing presentation rather than prototype UI.
 - **FR-035**: Minimap center follows the RTS ground camera target continuously during pan and Home, without moving units, spending credits or changing the main view; initial/opened dialog starts synchronized.
 - **SC-014**: Native hover enter/leave and locked-card cases show/hide descriptions;720p/1080p and4:3 screenshots show compact undistorted images without Base Command. Camera pan/Home regressions compare the minimap world center to the camera target within0.1m near the base.
 FR-033/034 supersede the presentation pass's permanent contextual-description column and selection-status panel. Original key art/fonts/camera feel remain.
+
+## macOS sidebar correction — 2026-10-31
+
+- **FR-036**: The command sidebar MUST remain flush with the right edge of the physical
+  game viewport, with its existing24% width and full height, when macOS clamps or the
+  user resizes the window. World input, minimap, tooltips and controls MUST stay aligned
+  with rendered positions. Preserve normal safe-area policy for other dialogs.
+- **SC-015**: Native screenshots and input regressions at exact720p/1080p drawable
+  sizes, a height-clamped Retina window,4:3 and borderless fullscreen show the panel at the right edge with
+  no uncovered strip. Resize/back transitions do not accumulate layout drift;
+  viewport clicks, selection, production and menu transitions remain functional.

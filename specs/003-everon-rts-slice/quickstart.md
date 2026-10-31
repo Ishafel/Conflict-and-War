@@ -15,7 +15,22 @@ Validation:
 
 Trident uses local .trident.env for game/data paths. Keep --strict and automatic readiness checks enabled. Run interface.test.sqf separately with --game-arg=--width/--height values1280/720 and1920/1080, separate profile/output directories. camera.test verifies physical keys, release, wheel and HQ reset; production.test verifies debit/refund/queue/restart; menu.test verifies menu/settings/direct entry. Add --game-arg=--splash to menu.test for startup script validation. Inspect screenshots, not just text assertions. Normal mission readiness is checked by an existing mission test without RTS overlay.
 
-Windows native build/test/run, macOS arm64 build/test/run and macOS x86_64 build/test/run are separate evidence. The Windows host cannot certify native macOS readiness. See verification.md.
+Windows x64 and macOS arm64 native build/test/run are separate evidence. Intel validation is optional by the owner's 2026-10-31 decision. The Windows host cannot certify native macOS readiness. See verification.md.
+
+Native macOS validation (set CW_DATA_DIR to the external installation first):
+
+```sh
+./target/debug/tri test --game-dir "$PWD/dist/arm64-macos-rwdi" \
+  --data-dir "$CW_DATA_DIR" --retries 0 --output-dir build/macos-rts \
+  --game-arg=--window --game-arg=--focus \
+  --game-arg=--width --game-arg=1280 --game-arg=--height --game-arg=720 \
+  tests/integration/cw
+```
+
+For background automation, --focus retains the engine's supported input processing;
+without it OS focus loss intentionally clears the placement preview and key state.
+Keep strict script errors and automatic readiness checks enabled. On Retina screens
+window dimensions and drawable screenshot pixels differ; record both when reviewing.
 
 Review regressions: placement.test checks a rotated building whose origin is 13 m away, missing geometry, rejection without debit and a clear-site success. mouse.test uses normal UI cursor/button polling for selection, movement by left click, switching units and sidebar isolation. menu_demo.test verifies the same Everon entry using PoseidonGameDemo.
 

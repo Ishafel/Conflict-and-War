@@ -2084,7 +2084,14 @@ bool GameDataArray::IsEqualTo(const GameData* data) const
     {
         return false;
     }
-    return false;
+    // Script array mutation rejects cycles; nested values use the same leaf
+    // equality rules, including undefined values that are never equal.
+    for (int i = 0; i < val1.Size(); ++i)
+    {
+        if (!val1[i].IsEqualTo(val2[i]))
+            return false;
+    }
+    return true;
 }
 
 #ifndef ACCESS_ONLY

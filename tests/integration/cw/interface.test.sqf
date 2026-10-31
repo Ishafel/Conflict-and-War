@@ -25,11 +25,24 @@ triAssertEq [CWR_RTS select 0,2000]
 triClickAt [7301,0.5,0.5,1]
 triAssertEq [CWR_RTS select 7,0]
 triAssertEq [CWR_RTS select 0,2000]
-// Search visible open terrain through actual native world clicks, not script placement.
+// Validate a world site before aiming: a fixed screen grid can miss every
+// clearing when the platform changes the drawable aspect. Placement still
+// goes through the native viewport click and must agree with its model preview.
+_site=[];
+{_dx=_x; {_p=[6519.04+_dx,6473.68+_x,0]; if ((count _site)==0) then {if ((_p call CWR_SiteError)=="") then {_site=+_p}}} forEach [-60,-40,-20,20,40,60]} forEach [-60,-40,-20,20,40,60];
+triAssertEq [count _site,3]
+CWR_RTS set [12,[(_site select 0)-12,(_site select 1)-12,0]]
+call CWR_UpdateCamera
+triSimFrames 6
 triClick 7310
-_clicked=false;
-{_u=_x; {if (!_clicked) then {triClickAt [7301,_u,_x]; if (!(isNull (CWR_RTS select 2))) then {_clicked=true}}} forEach [0.35,0.45,0.55,0.65,0.75]} forEach [0.2,0.35,0.5,0.65,0.8,0.9];
-triAssert [_clicked]
+triCursorMove [0,0]
+triSimFrames 6
+triAssertEq [count (CWR_RTS select 17),2]
+triAssert [(CWR_RTS select 17) select 1]
+_expected=+((CWR_RTS select 17) select 0)
+triClickAt [7301,0.6578947,0.5]
+triAssert [!(isNull (CWR_RTS select 2))]
+triAssertLt [[getPos (CWR_RTS select 2),_expected] call CWR_Distance,0.1]
 triAssertEq [CWR_RTS select 0,2000]
 triSimFrames 10
 triScreenshot "world_construction"

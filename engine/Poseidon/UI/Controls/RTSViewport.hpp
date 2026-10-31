@@ -36,6 +36,7 @@ class RTSViewport final : public CStatic
 
   public:
     RTSViewport(ControlsContainer* parent, int idc, const ParamEntry& cls);
+    void SetPos(float x, float y, float w, float h) override;
     void OnLButtonDown(float x, float y) override;
     void OnLButtonUp(float x, float y) override;
     void OnLButtonDblClick(float x, float y) override { OnLButtonDown(x, y); }

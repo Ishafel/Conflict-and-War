@@ -20,6 +20,7 @@
 #include <Poseidon/Foundation/Common/FltOpts.hpp>
 #include <Poseidon/Foundation/Containers/Array.hpp>
 #include <Poseidon/Foundation/Framework/DebugLog.hpp>
+#include <Poseidon/Foundation/Framework/Log.hpp>
 #include <Poseidon/Foundation/Math/Math3D.hpp>
 #include <Poseidon/Foundation/Math/Math3DP.hpp>
 #include <Poseidon/Foundation/Math/MathOpt.hpp>
@@ -83,6 +84,7 @@ void ControlsContainer::Init()
 
 IControl* ControlsContainer::GetCtrl(int idc)
 {
+    UpdateFullViewportLayout();
     for (int i = 0; i < _controlsBackground.Size(); i++)
     {
         IControl* owner = _controlsBackground[i];
@@ -209,6 +211,7 @@ void ControlsContainer::FocusCtrl(int idc)
 
 IControl* ControlsContainer::GetCtrl(float x, float y)
 {
+    UpdateFullViewportLayout();
     int i;
     for (i = 0; i < _controlsForeground.Size(); i++)
     {
@@ -322,6 +325,8 @@ void ControlsContainer::LoadControlBackground(const ParamEntry& ctrlCls)
 
 void ControlsContainer::Load(const ParamEntry& clsEntry)
 {
+    const ParamEntry* fullViewport = clsEntry.FindEntry("fullViewport");
+    _fullViewport = fullViewport && fullViewport->GetInt() != 0;
     _idd = ResolveLegacyControlInt(clsEntry >> "idd");
     int moving = ResolveLegacyControlInt(clsEntry >> "movingEnable");
     _movingEnable = moving != 0;
@@ -424,6 +429,7 @@ void ControlsContainer::Load(const ParamEntry& clsEntry)
             }
         }
     }
+    UpdateFullViewportLayout();
     NextCtrl();
 
     if (!_indexDefault.IsNull())
@@ -607,6 +613,7 @@ Camera OriginalCamera;
 
 void ControlsContainer::OnDraw(EntityAI* vehicle, float alpha)
 {
+    UpdateFullViewportLayout();
     if (_exit >= 0)
     {
         return;
@@ -709,8 +716,40 @@ bool ControlsContainer::OnUnregisteredAddonUsed(RString addon)
     return false;
 }
 
+void ControlsContainer::UpdateFullViewportLayout()
+{
+    if (!_fullViewport || !GEngine || GEngine->Width() <= 0 || GEngine->Height() <= 0)
+        return;
+    // Match Engine::Convert's rounded pixel bounds, including Retina surfaces.
+    const Presentation::Rect current{
+        float(GEngine->Left2D()) / GEngine->Width(), float(GEngine->Top2D()) / GEngine->Height(),
+        float(GEngine->Width2D()) / GEngine->Width(), float(GEngine->Height2D()) / GEngine->Height()};
+    if (current.w <= 0 || current.h <= 0 || !std::isfinite(current.w) || !std::isfinite(current.h))
+    {
+        LOG_ERROR(UI, "Cannot lay out full-viewport dialog {}: invalid UI band", _idd);
+        return;
+    }
+    if (current.x == _layoutUiRect.x && current.y == _layoutUiRect.y && current.w == _layoutUiRect.w &&
+        current.h == _layoutUiRect.h)
+        return;
+    const auto rebase = [&](RefArray<Control>& controls)
+    {
+        for (int i = 0; i < controls.Size(); ++i)
+        {
+            Control& control = *controls[i];
+            const auto rect =
+                Presentation::RebaseRect({control.X(), control.Y(), control.W(), control.H()}, _layoutUiRect, current);
+            control.SetPos(rect.x, rect.y, rect.w, rect.h);
+        }
+    };
+    rebase(_controlsBackground);
+    rebase(_controlsForeground);
+    _layoutUiRect = current;
+}
+
 void ControlsContainer::OnSimulate(EntityAI* vehicle)
 {
+    UpdateFullViewportLayout();
     if (_exit < 0)
     {
         SortObjects();

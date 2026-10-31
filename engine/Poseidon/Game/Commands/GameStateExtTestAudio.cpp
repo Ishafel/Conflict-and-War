@@ -247,6 +247,7 @@ GameValue TriDrawDepthTest(const GameState*);
 GameValue TriSendAltEnter(const GameState*);
 GameValue TriIsWindowed(const GameState*);
 GameValue TriGetWindowSize(const GameState*);
+GameValue TriGetControlRect(const GameState*, GameValuePar);
 GameValue TriAssertWindowedSmallerThanDesktop(const GameState*);
 GameValue TriGetFrameShape(const GameState*);
 GameValue TriAssertFrameShape(const GameState*, GameValuePar);
@@ -2984,6 +2985,7 @@ INIT_MODULE(GameStateExtTest, 3)
     GGameState.NewNularOp(GameNular(GameBool, "triSendAltEnter", TriSendAltEnter));
     GGameState.NewNularOp(GameNular(GameString, "triIsWindowed", TriIsWindowed));
     GGameState.NewNularOp(GameNular(GameString, "triGetWindowSize", TriGetWindowSize));
+    GGameState.NewFunction(GameFunction(GameArray, "triGetControlRect", TriGetControlRect, GameScalar));
     GGameState.NewFunction(GameFunction(GameString, "triGetPresentationRect", TriGetPresentationRect, GameString));
     GGameState.NewFunction(GameFunction(GameString, "triGetPresentationRectPx", TriGetPresentationRectPx, GameString));
     GGameState.NewNularOp(

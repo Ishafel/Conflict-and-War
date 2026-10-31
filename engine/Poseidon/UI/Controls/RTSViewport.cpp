@@ -161,6 +161,17 @@ std::optional<RTS::ScreenRect> RTSViewport::UnitRect(Object* unit) const
     return rect;
 }
 
+void RTSViewport::SetPos(float x, float y, float w, float h)
+{
+    // A resize changes logical coordinates; cancel a gesture instead of issuing
+    // a click/box-select between points from different UI coordinate frames.
+    _pressed = false;
+    _keys.fill(false);
+    _motion.Reset();
+    _lastFrame = 0;
+    CStatic::SetPos(x, y, w, h);
+}
+
 void RTSViewport::OnLButtonDown(float x, float y)
 {
     if (!IsInside(x, y))
