@@ -59,3 +59,50 @@
 успешны. Повторная сборка с тестами — 48s, без новой компиляции C/C++.
 Старые записи выше описывают первоначальное окружение до обнаружения VS tools.
 MacOS arm64/x64 остаются непроверенными; общий SC-003/T012 спецификации 001 открыт.
+
+## Нативная macOS arm64 — 2026-10-31
+
+Проверка FR-005, SC-003 и T012: Apple M4 Max (arm64), macOS 27.0.1,
+Xcode 27.1 / AppleClang 21.0.0, CMake 4.4.5, Ninja 1.13.2,
+Rust 1.99.1. Исходный commit: `984d375`.
+Baseline vcpkg и Cargo.lock сохранены. Исправлений исходников для сборки не потребовалось.
+
+| Проверка | Результат |
+| --- | --- |
+| `cmake --preset macos-arm64-clang-rwdi` | PASS; зависимости manifest собраны нативно |
+| `cmake --build --preset macos-arm64-clang-rwdi --parallel 3` | PASS; все C++ targets, 1087 шагов; журнал `build/cpp-build-macos.log` |
+| `ctest --preset macos-arm64-clang-rwdi` | PASS, 496/496; журнал `build/foundation-tests-macos.log` |
+| `cargo build --workspace --locked` | PASS; весь Rust workspace |
+| `cargo test --workspace --locked` | PASS, 205 тестов, без падений и пропусков; журнал `build/rust-tests-macos.log` |
+| `file dist/arm64-macos-rwdi/PoseidonGame` | Mach-O 64-bit executable arm64 |
+| Клиент с внешними ресурсами, оконный режим 1280×720 | PASS: OpenGL 4.1 Apple M4 Max, конфигурация и ресурсы C&W загружены; главное меню осмотрено по нативному снимку `build/macos-menu.png`; контрольный запуск завершился с кодом 0 |
+
+Для этого окружения дополнительно понадобились pkgconf и autotools; список
+инструментов в docs/building.md обновлён (SC-004). Полный LLVM не требуется:
+используются Xcode Clang и отдельный clang-format. Rust установлен в локальные
+`build/rustup` и `build/cargo`; настройки окружения сохранены в игнорируемом
+`build/macos-env.sh`, для повторных команд в этой рабочей копии:
+
+```sh
+source build/macos-env.sh
+cmake --build --preset macos-arm64-clang-rwdi --parallel 3
+ctest --preset macos-arm64-clang-rwdi
+cargo test --workspace --locked
+
+# CW_DATA_DIR задаётся пользователем и указывает на внешнюю установку с Worlds/BIN/DTA.
+POSEIDON_USER_DIR="$PWD/build/macos-user" \
+  ./dist/arm64-macos-rwdi/PoseidonGame -C "$CW_DATA_DIR" \
+  --window --width 1280 --height 720
+```
+
+Первый Foundation-прогон внутри песочницы дал 6 ошибок создания пользовательских
+каталогов macOS; повторён вне песочницы без изменения тестов, все 496 прошли.
+Загрузки vcpkg/Cargo также потребовали сетевого доступа вне песочницы.
+Линкер сообщил о повторяющихся библиотеках; при запуске были предупреждения
+об отсутствии GL_ARB_clip_control и текстуры `biscamel/icamel2.paa` во внешних данных.
+Они не помешали отображению главного меню; отсутствие расширения снижает точность глубины.
+
+Полный CTest, игровой сценарий Everon, фактическое воспроизведение звука,
+сетевая игра, перенос на другой Mac, подпись и notarization не проверялись.
+Intel macOS не собиралась; общий T012/SC-003 остаётся открытым до её проверки.
+Сторонние игровые данные оставлены во внешней установке.

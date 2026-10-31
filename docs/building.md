@@ -2,7 +2,9 @@
 
 Цели: Windows x64, macOS arm64 (Apple Silicon) и macOS x86_64 (Intel).
 Собирать нативно на соответствующей ОС и архитектуре. Windows x64 сборка и тесты подтверждены в [отчёте](../specs/002-windows-build-pipeline/verification.md).
-Нативные macOS прогоны пока не подтверждены.
+Нативная macOS arm64 сборка, Foundation/Rust tests и запуск главного меню подтверждены
+в [отчёте](../specs/001-project-foundation/verification.md#нативная-macos-arm64--2026-10-31).
+macOS x86_64 пока не проверена.
 
 ## Инструменты
 
@@ -82,8 +84,8 @@ vcpkg из VS не заменяет зафиксированный checkout пр
 Git LFS и инструменты через Homebrew:
 
 ```sh
-brew install cmake ninja ccache llvm git-lfs
-export PATH="$(brew --prefix llvm)/bin:$PATH"
+brew install cmake ninja ccache clang-format git-lfs pkgconf autoconf automake libtool
+export PATH="$(brew --prefix)/bin:$PATH"
 export CC="$(xcrun --find clang)"
 export CXX="$(xcrun --find clang++)"
 export SDKROOT="$(xcrun --show-sdk-path)"
@@ -108,7 +110,7 @@ cargo test --workspace --locked
 `macos-arm64-clang` / `macos-x64-clang`, Release — с суффиксом `-rel`.
 
 На macOS проект и зависимости используют Clang из активного Xcode, согласованный
-с его SDK. Homebrew LLVM предоставляет clang-format. Это исключает случайную
+с его SDK. Отдельный пакет Homebrew clang-format предоставляет форматтер. Это исключает случайную
 подмену SDK-компилятора новой основной версией Homebrew LLVM. Baseline vcpkg
 не меняется; overlay enkiTS явно подключает type_traits, используемый upstream.
 ARM и Intel проверяются раздельно; universal binary пока не создаётся.

@@ -38,7 +38,7 @@
 ## Phase 6: Validation and polish
 
 - [x] T015 Собрать Windows и прогнать lint/Trident, записать доказательства в specs/003-everon-rts-slice/verification.md (FR-008, SC-001–004).
-- [ ] T016 Выполнить нативные macOS arm64 и x86_64 build/test/run и записать результаты в specs/003-everon-rts-slice/verification.md (FR-008).
+- [ ] T016 Выполнить нативные macOS arm64 и x86_64 build/test/run и записать результаты в specs/003-everon-rts-slice/verification.md (FR-008). 2026-10-31 arm64: все C++ targets/Rust workspace, 496 Foundation + 205 Rust tests и главное меню PASS; Everon/3D-ввод/панель и x86_64 остаются непроверенными в этом прогоне.
 - [x] T017 Провести converge по spec/plan/tasks и добавить выявленные пробелы в specs/003-everon-rts-slice/tasks.md (FR-008).
 
 ## Dependencies & Parallel Opportunities
@@ -71,7 +71,7 @@ T001–T004 -> US1 -> US2 -> итоговый прогон. US3 artwork T012 н�
 
 Сверка 2026-10-27: 10 FR, 5 SC, 7 acceptance scenarios, 6 решений плана, 5 принципов конституции. Два missing-пробела: HIGH — нативные macOS-доказательства; MEDIUM — отдельное legacy-исправление. Contradicts/unrequested/partial: 0. Windows-реализация и доказательства перечислены в verification.md. Это не заявление о полной готовности всех платформ.
 
-- [ ] T027 HIGH: Выполнить нативные configure/build/test/run на macOS arm64 и x86_64, проверить 3D-ввод и панель, сохранить команды/результаты в specs/003-everon-rts-slice/verification.md и закрыть T016 по доказательствам — FR-008, T016, Constitution IV (missing). Сборки и CI-проверки arm64/x64 для7abc3a4 прошли2026-10-30; остаётся игровой запуск/3D-ввод/панель на соответствующих macOS-хостах.
+- [ ] T027 HIGH: Выполнить нативные configure/build/test/run на macOS arm64 и x86_64, проверить 3D-ввод и панель, сохранить команды/результаты в specs/003-everon-rts-slice/verification.md и закрыть T016 по доказательствам — FR-008, T016, Constitution IV (missing). Сборки и CI-проверки arm64/x64 для7abc3a4 прошли2026-10-30; 2026-10-31 для984d375 локальные arm64 configure/build/Foundation/Rust tests и запуск меню PASS. Остаётся игровой запуск Everon/3D-ввод/панель на соответствующих macOS-хостах.
 - [x] T028 MEDIUM: Выполнить отдельный Spec Kit цикл для унаследованной области EvalBreak в engine/Evaluator/express.cpp, добавить минимальное воспроизведение вложенных call/exitWith и регрессию до исправления; связать результат с T026 — T026, Constitution III (missing). За пределами игрового среза; не расширять текущую миссию ради этой ошибки.
 
 ## Phase 9: Windows review corrections

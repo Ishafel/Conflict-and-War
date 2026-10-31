@@ -31,7 +31,7 @@
 - [x] T009 [US2] Настроить build/test пары в cmake/presets/windows.json и cmake/presets/macos.json (FR-005, SC-002).
 - [x] T010 [US2] Подготовить переносимые cmake/RunClangFormat.cmake и cmake/RunClangTidy.cmake и проверить обработку ошибок (SC-002).
 - [x] T011 [US2] Добавить .github/workflows/build.yml и docs/building.md (FR-006, SC-004).
-- [ ] T012 [US2] Выполнить Windows x64, macOS arm64/x64 C++/Rust build/test; сохранить результаты в verification.md (SC-003).
+- [ ] T012 [US2] Выполнить Windows x64, macOS arm64/x64 C++/Rust build/test; сохранить результаты в verification.md (SC-003). Windows x64 подтверждена; 2026-10-31 нативная macOS arm64: все C++ targets/Rust workspace, 496 Foundation и 205 Rust tests PASS. Остаётся подтверждение macOS x86_64; см. verification.md.
 
 ## Dependencies & Execution Order
 
